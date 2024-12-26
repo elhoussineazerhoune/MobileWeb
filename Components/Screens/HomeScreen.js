@@ -19,7 +19,7 @@ export default function HomeScreen({ navigation }) {
     return (
         <GestureHandlerRootView>
             <SafeAreaView className="mb-15">
-                <StatusBar backgroundColor='#F5F5F5' style="dark" />
+                <StatusBar backgroundColor='transparent' style="dark" />
                 <ScrollView className="bg-white mb-15" showsVerticalScrollIndicator={false}>
                     <Animated.Text className="font-RubikM text-2xl mt-10 ml-3 mb-3" entering={FadeInLeft.duration(500)}>
                         Be Stylish at every moment

@@ -13,7 +13,7 @@ export default function ProductPost({ item }) {
         <View style={styles.item}>
             <Pressable onPress={() => { navigation.navigate("Product", { produit: item }) }}>
                 <View style={styles.imageContainer}>
-                    <Image source={{ uri: `http://10.0.2.2:3001/images/${item.image}` }} style={styles.image} />
+                    <Image source={item.imageUri} style={styles.image} />
                 </View>
             </Pressable>
         </View>

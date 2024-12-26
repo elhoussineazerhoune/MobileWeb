@@ -10,6 +10,7 @@ import {
     Dimensions,
     FlatList,
     RefreshControl,
+    TouchableOpacity
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
@@ -17,7 +18,18 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as ImagePicker from 'react-native-image-picker';
 import ProductPost from "../Common/ProductPost";
+import { Avatar, Button, Icon } from 'react-native-elements';
 
+const posts = [
+    // { "id": 1, "imageUri": require("../../assets/products/p1.jpeg") },
+    { "id": 2, "imageUri": require("../../assets/products/p2.jpeg") },
+    { "id": 3, "imageUri": require("../../assets/products/p3.jpeg") },
+    { "id": 4, "imageUri": require("../../assets/products/p4.jpeg") },
+    { "id": 5, "imageUri": require("../../assets/products/p5.jpeg") },
+
+
+
+]
 
 function ProfileScreen({ navigation, route }) {
     const { width } = Dimensions.get('window');
@@ -26,7 +38,7 @@ function ProfileScreen({ navigation, route }) {
     const [user, setUser] = useState({});
     const [isConnected, setIsConnected] = useState(false);
     const [image, setimage] = useState();
-    const [posts, setPosts] = useState();
+    const [Posts, setPosts] = useState();
 
     async function handleProfile() {
         const token = await AsyncStorage.getItem("token");
@@ -41,21 +53,21 @@ function ProfileScreen({ navigation, route }) {
                 }
             }).catch((e) => console.warn(e));
     }
-    useEffect(() => {
-        handleProfile();
-    }, []);
-    useEffect(() => {
-        handleProductImg();
-    }, [user])
+    // useEffect(() => {
+    //     handleProfile();
+    // }, []);
+    // useEffect(() => {
+    //     handleProductImg();
+    // }, [user])
 
     function handleSignOut() {
         AsyncStorage.removeItem("token")
         navigation.navigate("Login");
     }
-    function handleRefresh() {
-        setIsConnected(false);
-        handleProfile();
-    }
+    // function handleRefresh() {
+    //     setIsConnected(false);
+    //     handleProfile();
+    // }
 
     const takephotofromlibrary = async () => {
         ImagePicker.launchImageLibrary(
@@ -125,83 +137,56 @@ function ProfileScreen({ navigation, route }) {
         )
     }
 
-    if (!isConnected) {
-        return (
-            <View className="h-screen items-center justify-center">
-                <ActivityIndicator size='' color='#4D2222' />
-            </View>
-        )
-    }
+    // if (!isConnected) {
+    //     return (
+    //         <View className="h-screen items-center justify-center">
+    //             <ActivityIndicator size='' color='#4D2222' />
+    //         </View>
+    //     )
+    // }
 
     return (
         <GestureHandlerRootView>
             <View>
-                <View style={styles.containerInfos}>
-                    <View style={styles.img_name}>
-                        <View style={styles.imageContainer}>
-                            <Image source={
-                                user.ProfileImg != null ? { uri: (`http://10.0.2.2:3001/images/${user.ProfileImg}`) } : { uri: (`http://10.0.2.2:3001/images/profile.png`) }
-                            } style={styles.image} />
-                        </View>
-                        <Pressable style={styles.add_press} onPress={() => { takephotofromlibrary() }}>
-                            <Ionicons name="add-outline" size={20} style={styles.changeProfile} />
-                        </Pressable>
-                        <Text style={styles.name}>{user.firstname} {user.lastname}</Text>
-                        <Text className='text-center'>Categorie: {user.categorie}</Text>
-                    </View>
-
-                    <View style={styles.info}>
-
-                        <View style={styles.adresse}>
-                            <Ionicons name="mail" size={20} style={{ color: "#ff9500" }} />
-                            <Text style={{ color: "#000", marginLeft: 10 }}>
-                                {user.email}
-                            </Text>
-                        </View>
-                        <View style={styles.email}>
-                            <Ionicons name="location" size={20} style={{ color: "#ff9500" }} />
-                            <Text style={{ color: "#000", marginLeft: 10 }} >
-                                {user.adresse}
-                            </Text>
-                        </View>
-                        <View style={styles.email}>
-                            <Ionicons name="call" size={20} style={{ color: "#ff9500" }} />
-                            <Text style={{ color: "#000", marginLeft: 10 }}>
-                                {user.phone}
-                            </Text>
-                        </View>
-
-                    </View>
-
+                <View style={styles.header}>
+                    <Icon name="arrow-back" type="material" color="#fff" onPress={() => { navigation.goBack() }} />
+                    <Text style={styles.username}>Azerhoune elhoussine</Text>
+                    <Icon name="search" type="material" color="#fff" />
                 </View>
-
-                <View style={{ flexDirection: "row", marginTop: 30, justifyContent: 'center' }}>
-                    <Ionicons
-                        name="pencil-outline"
-                        size={20}
-                        className="text-[#494C61]"
-                        style={{ color: "#ff9525", marginRight: 5 }}
+                {/* Profile Info */}
+                <View style={styles.profileInfo}>
+                    <Image
+                        source={require('../../assets/images/img1.jpeg')}
+                        style={styles.bannerImage}
                     />
-                    <Text style={{ textAlign: "center", width: 300 }}>{user.description}</Text>
-                </View>
+                    <Avatar
+                        rounded
+                        size="xlarge"
+                        source={require('../../assets/images/img1.jpeg')}
+                        containerStyle={styles.avatar}
+                    />
 
-                <ScrollView showsHorizontalScrollIndicator={false} horizontal={true}>
-                    <View style={styles.options}>
-                        <Pressable style={styles.optionItem} onPress={() => { navigation.navigate("addProduct", { artisan: user }) }}>
-                            <Ionicons name="add-circle-outline" size={20} style={{ color: "#ff9525", marginRight: 5, alignSelf: 'center' }} />
-                            <Text style={{ color: 'grey', fontSize: 17, fontWeight: 'bold', alignSelf: 'center' }}>Ajouter un produit</Text>
-                        </Pressable>
-                        <Pressable style={styles.optionItem} onPress={() => { navigation.navigate("EditeInfo") }}>
-                            <Ionicons name="create-outline" size={20} style={{ color: "#ff9525", marginRight: 5, alignSelf: 'center' }} />
-                            <Text style={{ color: 'grey', fontSize: 17, fontWeight: 'bold', alignSelf: 'center' }}>Modifier les info
-                            </Text>
-                        </Pressable>
-                        <Pressable style={styles.optionItem} onPress={handleSignOut}>
-                            <Ionicons name="log-out-outline" size={20} style={{ color: "#ff9525", marginRight: 5, alignSelf: 'center' }} />
-                            <Text style={{ color: 'grey', fontSize: 17, fontWeight: 'bold', alignSelf: 'center' }}>Se deconnecter</Text>
-                        </Pressable>
+
+                </View>
+                {/* Intro Section */}
+
+                <View style={styles.introContainer}>
+                    <View style={styles.cardView}>
+                        <Text style={styles.name}>Azerhoune elhoussine</Text>
                     </View>
-                </ScrollView>
+                    <View style={styles.introInfo}>
+                        <Ionicons name="call" size={15} color="#486FFB" />
+                        <Text>+212 090987751</Text>
+                    </View>
+                    <View style={styles.introInfo}>
+                        <Ionicons name="heart" size={15} color="#486FFB" />
+                        <Text>20 piece</Text>
+                    </View>
+                    <View style={styles.introInfo}>
+                        <Ionicons name="pencil" size={15} color="#486FFB" />
+                        <Text>Hey I am using jjottia app</Text>
+                    </View>
+                </View>
                 <Text
                     style={{ marginTop: 47, marginLeft: 15, color: "#5f5f5b", fontSize: 15, fontWeight: 'bold' }}
                 >
@@ -250,7 +235,8 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         marginBottom: 5,
         justifyContent: 'flex-start',
-        textAlign: 'center'
+        textAlign: 'center',
+        marginTop: 12,
     },
     pressable: {
         marginTop: 40,
@@ -367,6 +353,142 @@ const styles = StyleSheet.create({
         width: 170,
         flexDirection: 'row'
 
+    },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingTop: 20,
+        backgroundColor: 'transparent',
+        zIndex: 10,
+        paddingHorizontal: 10,
+        fontWeight: '700'
+    },
+    username: {
+        flex: 1,
+        color: '#fff',
+        fontSize: 22,
+        textAlign: 'center',
+        fontWeight: '700'
+    },
+    profileInfo: {
+        alignItems: 'center',
+        marginTop: -50,
+        justifyContent: 'center',
+
+    },
+    bannerImage: {
+        width: '100%',
+        height: 150,
+    },
+    avatar: {
+        position: 'absolute',
+        top: 100,
+        borderWidth: 5,
+        borderColor: '#fff',
+        marginRight: 0,
+        zIndex: 10,
+        justifyContent: 'center',
+    },
+    name: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        marginTop: 5,
+    },
+    subText: {
+        color: 'gray',
+        marginTop: 4,
+        marginLeft: 5
+    },
+    cardView: {
+        alignSelf: "center",
+        paddingBottom: 1,
+        alignItems: "center",
+        paddingLeft: 10,
+        paddingTop: 15,
+        position: 'relative',
+        marginTop: 20,
+        marginBottom: 20,
+    },
+    publishButton: {
+        backgroundColor: '#FFD700',
+        paddingVertical: 10,
+        borderRadius: 25,
+        paddingHorizontal: 5,
+        alignItems: 'center',
+        width: '35%',
+        display: "flex",
+        marginBottom: 20
+    },
+    buttonContainer: {
+        display: 'flex',
+        flexDirection: 'row',
+        marginTop: 16,
+        alignSelf: 'flex-end',
+        gap: 10,
+        paddingHorizontal: 20,
+        // borderWidth:1,
+        width: "100%",
+        justifyContent: "flex-end"
+    },
+    linkButton: {
+        alignSelf: "flex-start",
+        backgroundColor: '#FF52C0',
+        padding: 10,
+        borderRadius: 20,
+        marginTop: 16,
+        marginLeft: 20,
+        position: 'absolute',
+        top: 250,
+        zIndex: 10,
+        width: "30%",
+
+    },
+    linkButtonText: {
+        color: 'white',
+        fontWeight: 'bold',
+        textAlign: 'center'
+    },
+    introContainer: {
+        paddingHorizontal: 10,
+        marginTop: 60,
+        shadowColor: "#000",
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 2 },
+        elevation: 4,
+        backgroundColor: "rgba(255, 255, 255, 0.9)",
+        borderRadius: 8,
+        marginHorizontal: 15,
+        position: 'relative',
+        paddingBottom: 10
+
+    },
+    introTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: 'black',
+    },
+    introText: {
+        fontSize: 14,
+        marginTop: 4,
+    },
+    heading: {
+        fontSize: 22,
+        fontWeight: 'bold',
+        marginVertical: 5,
+    },
+    headingPosts: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        paddingLeft: 10,
+        marginBottom: 20
+    },
+    introInfo: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+        paddingLeft: 10,
+        marginBottom: 10
     },
 
 });
