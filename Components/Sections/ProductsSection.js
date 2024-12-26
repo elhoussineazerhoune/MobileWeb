@@ -54,7 +54,7 @@ const renderItem = ({ item }) => (
         </TouchableOpacity> */}
 
         {/* Product Info */}
-        <View style={{flexDirection:'row',justifyContent:'space-between',width:'90%'}}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '90%' }}>
             <Text style={styles.name}>{item.name}</Text>
             <Text style={styles.price}>{item.price}</Text>
         </View>
@@ -66,8 +66,8 @@ const renderItem = ({ item }) => (
     </View>
 );
 
-export default function ProductsSection() {
-    // const navigation = useNavigation();
+export default function ProductsSection({ type }) {
+    const navigation = useNavigation();
     // const [products, setProducts] = useState();
     // const [isConnected, setIsConnected] = useState(false);
     // function handleProducts() {
@@ -92,10 +92,10 @@ export default function ProductsSection() {
     //     )
     // }
     return (
-        <Animated.View entering={FadeInRight.duration(700)} className='mb-[70px]'>
-            <View className="flex flex-row mt-6">
+        <Animated.View entering={FadeInRight.duration(700)} className='mb-[5px]'>
+            <View className="flex flex-row mt-2 ">
                 <Text className="font-[Rubik-SemiBold] text-xl my-3 ml-3 flex-1">
-                    Suggestions
+                    {type}
                 </Text>
                 <View className="mr-3">
                     <SmallButton onPress={() => navigation.navigate("Search")}>
@@ -117,7 +117,7 @@ export default function ProductsSection() {
 const styles = StyleSheet.create({
     listContainer: {
         paddingHorizontal: 10,
-        paddingVertical: 10,
+        paddingVertical: 20,
     },
     card: {
         flex: 1,
@@ -131,15 +131,15 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 2 },
         elevation: 3,
         alignItems: "center",
-        minWidth:100,
-        maxWidth:150
+        minWidth: 100,
+        maxWidth: 150
     },
     image: {
         width: "100%",
         height: 100,
         marginBottom: 10,
-        borderTopLeftRadius:5,
-        borderTopRightRadius:5
+        borderTopLeftRadius: 5,
+        borderTopRightRadius: 5
     },
     favoriteIcon: {
         position: "absolute",
@@ -152,8 +152,8 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         textAlign: "center",
         marginBottom: 5,
-        maxWidth:"70%",
-        overflow:'hidden'
+        maxWidth: "70%",
+        overflow: 'hidden'
     },
     price: {
         fontSize: 14,

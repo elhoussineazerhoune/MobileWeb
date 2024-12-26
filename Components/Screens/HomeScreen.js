@@ -24,7 +24,6 @@ export default function HomeScreen({ navigation }) {
                     <Animated.Text className="font-RubikM text-2xl mt-10 ml-3 mb-3" entering={FadeInLeft.duration(500)}>
                         Be Stylish at every moment
                     </Animated.Text>
-
                     <Pressable onPress={() => { navigation.navigate('Search') }}>
                         <View style={styles.rechercheView}>
                             <View style={{ flexDirection: 'row' }}>
@@ -33,10 +32,11 @@ export default function HomeScreen({ navigation }) {
                             </View>
                         </View>
                     </Pressable>
-
                     <CategoriesSection />
-                    
-                    <ProductsSection />
+                    <ProductsSection type={"Suggestions"}/>
+                    <ProductsSection type={"Snickers"}/>
+                    <ProductsSection type={"MenWears"}/>
+
                 </ScrollView>
             </SafeAreaView>
         </GestureHandlerRootView>
