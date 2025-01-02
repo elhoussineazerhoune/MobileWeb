@@ -5,15 +5,11 @@ import { ChevronDownIcon } from "react-native-heroicons/solid";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaView } from "react-native-safe-area-context";
 import CategoriesSection from "../Sections/CategoriesSection";
-import {
-    GestureHandlerRootView,
-    RefreshControl,
-    ScrollView,
-} from "react-native-gesture-handler";
+import { GestureHandlerRootView, RefreshControl, ScrollView } from "react-native-gesture-handler";
 import ProductsSection from "../Sections/ProductsSection";
 import Animated, { FadeInLeft } from "react-native-reanimated";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import SmallButton from "../Common/SmallButton";
+import Posts from "../Sections/Posts";
 
 export default function HomeScreen({ navigation }) {
     return (
@@ -33,9 +29,12 @@ export default function HomeScreen({ navigation }) {
                         </View>
                     </Pressable>
                     <CategoriesSection />
-                    <ProductsSection type={"Suggestions"}/>
-                    <ProductsSection type={"Snickers"}/>
-                    <ProductsSection type={"MenWears"}/>
+                    <ProductsSection type={"Suggestions"} />
+
+                    <Posts />
+
+                    <ProductsSection type={"Snickers"} />
+                    <ProductsSection type={"MenWears"} />
 
                 </ScrollView>
             </SafeAreaView>
