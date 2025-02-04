@@ -18,7 +18,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as ImagePicker from 'react-native-image-picker';
 import ProductPost from "../Common/ProductPost";
-import { Avatar, Button, Icon } from 'react-native-elements';
+import { Avatar, Button, Icon, Card } from 'react-native-elements';
 
 const posts = [
     // { "id": 1, "imageUri": require("../../assets/products/p1.jpeg") },
@@ -27,47 +27,70 @@ const posts = [
     { "id": 4, "imageUri": require("../../assets/products/p4.jpeg") },
     { "id": 5, "imageUri": require("../../assets/products/p5.jpeg") },
 
-
-
 ]
 
+const mockOrders = [
+    {
+        id: 1,
+        status: 'completed',
+        date: '2024-01-15',
+        total: 150.99,
+        products: [
+            { id: 1, name: 'Product 1', quantity: 2, price: 75.50 }
+        ]
+    },
+    {
+        id: 2,
+        status: 'pending',
+        date: '2024-01-20',
+        total: 89.99,
+        products: [
+            { id: 2, name: 'Product 2', quantity: 1, price: 89.99 }
+        ]
+    },
+    {
+        id: 3,
+        status: 'cancelled',
+        date: '2024-01-22',
+        total: 199.99,
+        products: [
+            { id: 3, name: 'Product 3', quantity: 1, price: 199.99 }
+        ]
+    }
+];
+
 function ProfileScreen({ navigation, route }) {
-    const { width } = Dimensions.get('window');
-    const ITEM_WIDTH = (width - 20) / 3;
-    //   let data = route.params;
     const [user, setUser] = useState({});
     const [isConnected, setIsConnected] = useState(false);
     const [image, setimage] = useState();
     const [Posts, setPosts] = useState();
+    const [orders, setOrders] = useState(mockOrders);
+
+    const [isAdmin, SetisAdmin] = useState(false);
 
     async function handleProfile() {
-        const token = await AsyncStorage.getItem("token");
+        const id = await AsyncStorage.getItem("ClientToken");
+        // console.log(id);
         axios
-            .post("http://10.0.2.2:3001/profile", { token })
+            .post("http://10.0.2.2:3306/api/client/findcurrentclient", { id })
             .then((res) => {
                 if (res.data.error) {
                     console.warn(res.data.error);
                 } else {
-                    setUser(res.data);
-                    setIsConnected(true);
+                    console.log(res.data.user);
+                    setUser(res.data.user);
                 }
             }).catch((e) => console.warn(e));
     }
-    // useEffect(() => {
-    //     handleProfile();
-    // }, []);
-    // useEffect(() => {
-    //     handleProductImg();
-    // }, [user])
+
+    useEffect(() => {
+        handleProfile();
+    }, []);
 
     function handleSignOut() {
-        AsyncStorage.removeItem("token")
+        AsyncStorage.removeItem("ClientToken")
         navigation.navigate("Login");
     }
-    // function handleRefresh() {
-    //     setIsConnected(false);
-    //     handleProfile();
-    // }
 
     const takephotofromlibrary = async () => {
         ImagePicker.launchImageLibrary(
@@ -112,99 +135,123 @@ function ProfileScreen({ navigation, route }) {
             })
     };
 
-    const handleProductImg = async () => {
-        let idArtisant = user.iduser;
-        console.log(user.iduser);
-        await axios.post('http://10.0.2.2:3001/productsByArtisant', { idArtisant })
-            .then((res) => {
-                if (res.data.error) {
-                    console.warn(res.data.error);
-                } else {
-                    console.log(res.data);
-                    setPosts(res.data);
-                }
-            })
-    }
-    if (user.isVerified == 0) {
-        return (
-            <ScrollView refreshControl={<RefreshControl onRefresh={handleRefresh} />}>
-                <View className="flex h-screen justify-center self-center">
-                    <Text className="font-RubikB text-xl">
-                        Attendez un Administrateur pour vous verifier
-                    </Text>
-                </View>
-            </ScrollView>
-        )
-    }
-
-    // if (!isConnected) {
-    //     return (
-    //         <View className="h-screen items-center justify-center">
-    //             <ActivityIndicator size='' color='#4D2222' />
-    //         </View>
-    //     )
+    // const handleProductImg = async () => {
+    //     let idArtisant = user.iduser;
+    //     console.log(user.iduser);
+    //     await axios.post('http://10.0.2.2:3001/productsByArtisant', { idArtisant })
+    //         .then((res) => {
+    //             if (res.data.error) {
+    //                 console.warn(res.data.error);
+    //             } else {
+    //                 console.log(res.data);
+    //                 setPosts(res.data);
+    //             }
+    //         })
     // }
 
-    return (
-        <GestureHandlerRootView>
-            <View>
-                <View style={styles.header}>
-                    <Icon name="arrow-back" type="material" color="#fff" onPress={() => { navigation.goBack() }} />
-                    <Text style={styles.username}>Azerhoune elhoussine</Text>
-                    <Icon name="search" type="material" color="#fff" />
-                </View>
-                {/* Profile Info */}
-                <View style={styles.profileInfo}>
-                    <Image
-                        source={require('../../assets/images/img1.jpeg')}
-                        style={styles.bannerImage}
-                    />
-                    <Avatar
-                        rounded
-                        size="xlarge"
-                        source={require('../../assets/images/img1.jpeg')}
-                        containerStyle={styles.avatar}
-                    />
+    if (!user) {
+        <ActivityIndicator size="large" color="#0000ff" />
+    } else {
+        return (
+            <GestureHandlerRootView>
+                <ScrollView>
+                    <View>
+                        <View style={styles.header}>
+                            <Icon name="arrow-back" type="material" color="#fff" onPress={() => { navigation.goBack() }} />
+                            <Text style={styles.username}>{user.nom} {user.prenom}</Text>
+                            <Icon name="search" type="material" color="#fff" />
+                        </View>
+                        {/* Profile Info */}
+                        <View style={styles.profileInfo}>
+                            <Image
+                                source={require('../../assets/images/img1.jpeg')}
+                                style={styles.bannerImage}
+                            />
+                            <Avatar
+                                rounded
+                                size="xlarge"
+                                source={require('../../assets/images/img1.jpeg')}
+                                containerStyle={styles.avatar}
+                            />
 
 
-                </View>
-                {/* Intro Section */}
+                        </View>
+                        {/* Intro Section */}
 
-                <View style={styles.introContainer}>
-                    <View style={styles.cardView}>
-                        <Text style={styles.name}>Azerhoune elhoussine</Text>
+                        <View style={styles.introContainer}>
+                            <View style={styles.cardView}>
+                                <Text style={styles.name}>{user.nom} {user.prenom}</Text>
+                            </View>
+                            <View style={styles.introInfo}>
+                                <Ionicons name="call" size={15} color="#486FFB" />
+                                <Text>{user.contact}</Text>
+                            </View>
+                            <View style={styles.introInfo}>
+                                <Ionicons name="heart" size={15} color="#486FFB" />
+                                <Text>{user.email}</Text>
+                            </View>
+                            <View style={styles.introInfo}>
+                                <Ionicons name="pencil" size={15} color="#486FFB" />
+                                <Text>{user.adresse}</Text>
+                            </View>
+                        </View>
+
+                        {!isAdmin && (
+                            <View style={styles.ordersContainer}>
+                                <Text style={styles.ordersTitle}>Mes Commandes</Text>
+                                {orders.map((order) => (
+                                    <Card key={order.id} containerStyle={styles.orderCard}>
+                                        <View style={styles.orderHeader}>
+                                            <Text style={styles.orderNumber}>Commande #{order.id}</Text>
+                                            <Text style={[
+                                                styles.orderStatus,
+                                                {
+                                                    color: order.status === 'completed' ? 'green' :
+                                                        order.status === 'pending' ? 'orange' : 'red'
+                                                }
+                                            ]}>
+                                                {order.status}
+                                            </Text>
+                                        </View>
+                                        <View style={styles.orderDetails}>
+                                            <Text>Date: {new Date(order.date).toLocaleDateString()}</Text>
+                                            <Text>Total: {order.total}€</Text>
+                                        </View>
+                                        <TouchableOpacity
+                                            style={styles.viewDetailsButton}
+                                            onPress={() => navigation.navigate('OrderDetails', { orderId: order.id })}
+                                        >
+                                            <Text style={styles.viewDetailsText}>Voir détails</Text>
+                                        </TouchableOpacity>
+                                    </Card>
+                                ))}
+                            </View>
+                        )}
+
+                        {isAdmin &&
+                            <>
+                                <Text
+                                    style={{ marginTop: 47, marginLeft: 15, color: "#5f5f5b", fontSize: 15, fontWeight: 'bold' }}
+                                >
+                                    Mes produits :
+                                </Text>
+                                <View style={{ marginTop: 10 }}>
+                                    <FlatList
+                                        data={posts}
+                                        keyExtractor={(item) => item.idArtisant}
+                                        numColumns={3}
+                                        renderItem={({ item }) => <ProductPost item={item} />}
+                                        scrollEnabled={true}
+                                        showsHorizontalScrollIndicator={false}
+                                    />
+                                </View>
+                            </>}
                     </View>
-                    <View style={styles.introInfo}>
-                        <Ionicons name="call" size={15} color="#486FFB" />
-                        <Text>+212 090987751</Text>
-                    </View>
-                    <View style={styles.introInfo}>
-                        <Ionicons name="heart" size={15} color="#486FFB" />
-                        <Text>20 piece</Text>
-                    </View>
-                    <View style={styles.introInfo}>
-                        <Ionicons name="pencil" size={15} color="#486FFB" />
-                        <Text>Hey I am using jjottia app</Text>
-                    </View>
-                </View>
-                <Text
-                    style={{ marginTop: 47, marginLeft: 15, color: "#5f5f5b", fontSize: 15, fontWeight: 'bold' }}
-                >
-                    Mes produits :
-                </Text>
-                <View style={{ marginTop: 10 }}>
-                    <FlatList
-                        data={posts}
-                        keyExtractor={(item) => item.idArtisant}
-                        numColumns={3}
-                        renderItem={({ item }) => <ProductPost item={item} />}
-                        scrollEnabled={true}
-                        showsHorizontalScrollIndicator={false}
-                    />
-                </View>
-            </View>
-        </GestureHandlerRootView>
-    );
+                </ScrollView>
+            </GestureHandlerRootView>
+        );
+    }
+
 }
 export default ProfileScreen;
 
@@ -490,5 +537,46 @@ const styles = StyleSheet.create({
         paddingLeft: 10,
         marginBottom: 10
     },
-
+    ordersContainer: {
+        padding: 15,
+        marginTop: 20,
+    },
+    ordersTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        marginBottom: 15,
+        color: '#333',
+    },
+    orderCard: {
+        borderRadius: 10,
+        marginBottom: 10,
+        padding: 15,
+        elevation: 3,
+    },
+    orderHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 10,
+    },
+    orderNumber: {
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    orderStatus: {
+        fontWeight: 'bold',
+    },
+    orderDetails: {
+        marginBottom: 10,
+    },
+    viewDetailsButton: {
+        backgroundColor: '#486FFB',
+        padding: 10,
+        borderRadius: 5,
+        alignItems: 'center',
+    },
+    viewDetailsText: {
+        color: 'white',
+        fontWeight: 'bold',
+    },
 });
