@@ -1,5 +1,5 @@
 import { View, Text } from "react-native";
-import React from "react";
+import React, { useEffect } from "react";
 import SmallButton from "../Common/SmallButton";
 import {
   FlatList,
@@ -7,6 +7,7 @@ import {
 } from "react-native-gesture-handler";
 import SmallItem from "../Common/SmallItem";
 import Animated, { FadeInLeft } from "react-native-reanimated";
+import axios from "axios";
 import c1 from "../../assets/images/categories/c1.jpeg";
 import c2 from "../../assets/images/categories/c2.jpeg";
 import c3 from "../../assets/images/categories/c3.jpeg";
@@ -16,6 +17,10 @@ import c6 from "../../assets/images/categories/c6.jpeg";
 
 
 // ["Poterie,Zlij,tapis,Cuir,Peinturen,Couture,Charpentrie,Forge"]
+
+
+
+
 
 const categories = [
   {
@@ -59,6 +64,7 @@ const categories = [
 ];
 
 export default function CategoriesSection() {
+  
   return (
     <Animated.View entering={FadeInLeft.duration(600)}>
       <GestureHandlerRootView>

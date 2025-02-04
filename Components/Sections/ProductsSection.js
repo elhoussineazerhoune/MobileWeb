@@ -68,29 +68,6 @@ const renderItem = ({ item }) => (
 
 export default function ProductsSection({ type }) {
     const navigation = useNavigation();
-    // const [products, setProducts] = useState();
-    // const [isConnected, setIsConnected] = useState(false);
-    // function handleProducts() {
-    //     axios.post("http://10.0.2.2:3001/allProducts").then((res) => {
-    //         if (res.data.error) {
-    //             console.warn(res.data.error);
-    //         } else {
-    //             // console.log(res.data);
-    //             let articles = res.data;
-    //             setProducts(articles.sort((a, b) => b.idArticle - a.idArticle).slice(0, 3));
-    //             setIsConnected(true);
-    //         }
-    //     })
-    // }
-    // useEffect(() => {
-    //     handleProducts();
-
-    // }, []);
-    // if (!isConnected) {
-    //     return (
-    //         <View></View>
-    //     )
-    // }
     return (
         <Animated.View entering={FadeInRight.duration(700)} className='mb-[5px]'>
             <View className="flex flex-row mt-2 ">

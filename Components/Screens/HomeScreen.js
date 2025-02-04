@@ -1,7 +1,6 @@
 import { View, Text, Pressable, Image, StyleSheet, TextInput } from "react-native";
 import React from "react";
-import Events from "../Sections/Events";
-import { ChevronDownIcon } from "react-native-heroicons/solid";
+
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaView } from "react-native-safe-area-context";
 import CategoriesSection from "../Sections/CategoriesSection";
@@ -10,8 +9,20 @@ import ProductsSection from "../Sections/ProductsSection";
 import Animated, { FadeInLeft } from "react-native-reanimated";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import Posts from "../Sections/Posts";
+import axios from "axios";
+import { useEffect } from "react";
 
+const getCategories = async () => {
+    await axios.get("http://10.0.2.2:8080/api/categories").then(
+        (res) => {
+            console.log("data is :" + res);
+        }
+    );
+}
 export default function HomeScreen({ navigation }) {
+    useEffect(() => {
+        getCategories();
+    }, [])
     return (
         <GestureHandlerRootView>
             <SafeAreaView className="mb-15">
@@ -31,7 +42,7 @@ export default function HomeScreen({ navigation }) {
                     <CategoriesSection />
                     <ProductsSection type={"Suggestions"} />
 
-                    <Posts />
+                    {/* <Posts /> */}
 
                     <ProductsSection type={"Snickers"} />
                     <ProductsSection type={"MenWears"} />
