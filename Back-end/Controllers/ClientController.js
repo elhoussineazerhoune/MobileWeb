@@ -109,16 +109,19 @@ const findCurrentClient = async (req, res) => {
     const { id } = req.body;
     console.log(id);
     const currentid = jwt.verify(id, process.env.JWT_SECRET);
+    console.log("ddd", currentid.id);
     const ClientExists = await Client.findByPk(currentid.id);
     console.log(ClientExists.nom);
     res.json({
       success: true,
-      id: ClientExists.id,
-      nom: ClientExists.nom,
-      prenom: ClientExists.prenom,
-      contact: ClientExists.contact,
-      email: ClientExists.email,
-      adresse: ClientExists.adresse,
+      user: {
+        id: ClientExists.id,
+        nom: ClientExists.nom,
+        prenom: ClientExists.prenom,
+        contact: ClientExists.contact,
+        email: ClientExists.email,
+        adresse: ClientExists.adresse,
+      }
     });
   } catch (error) {
     res.json({
@@ -188,7 +191,7 @@ const registeruser = async (req, res) => {
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-    const newClient = Client.create({
+    const newClient = await Client.create({
       nom: name,
       prenom: lastname,
       email: email,
@@ -196,8 +199,8 @@ const registeruser = async (req, res) => {
       adresse: adresse,
       contact: contact,
     });
-    // const client = await newClient.save();
-    const token = createToken(newClient.clt_id);
+    console.log(newClient);
+    const token = createToken(newClient.id);
     res.json({ success: true, token });
   } catch (error) {
     console.log(error);

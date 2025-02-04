@@ -16,6 +16,7 @@ import LoginScreen from "../Screens/LoginScreen";
 import CartScreen from "../Screens/CartScreen.js";
 import CategoryScreen from '../Screens/CategoryScreen';
 import ProductDetailsScreen from '../Screens/ProductDetailsScreen';
+import OrderDetails from '../Screens/OrderDetails';
 
 const Stack = createNativeStackNavigator();
 export default function HeaderNav() {
@@ -35,18 +36,19 @@ export default function HeaderNav() {
         <Stack.Screen name="EditeInfo" component={EditeInfoScreen} />
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Cart" component={CartScreen} />
-        <Stack.Screen 
-          name="category" 
+        <Stack.Screen name="OrderDetails" component={OrderDetails} />
+        <Stack.Screen
+          name="category"
           component={CategoryScreen}
           options={{
-              headerShown: false
+            headerShown: false
           }}
         />
-        <Stack.Screen 
-          name="ProductDetails" 
+        <Stack.Screen
+          name="ProductDetails"
           component={ProductDetailsScreen}
           options={{
-              headerShown: false
+            headerShown: false
           }}
         />
       </Stack.Navigator>
