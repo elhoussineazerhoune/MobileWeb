@@ -8,19 +8,20 @@ import SignUp from "../Screens/SignUp";
 import ProfileScreen from "../Screens/ProfileScreen";
 import ProductPage from "../Common/ProductPage.js";
 import NfcScannerScreen from "../Screens/NfcScannerScreen";
-import AddProductScreen from "../Screens/AddProductScreen";
-import ArtisansOfCategorie from "../Screens/ArtisansOfCategorie";
-import TopTabNavigator from "./TopTabNavigator";
+import AddProductScreen from "../Screens/AddProductScreen"
 import ExpositionScreen from "../Screens/ExpositionScreen";
 import VisitedProfile from "../Common/VisitedProfile.js";
 import EditeInfoScreen from "../Screens/EditeInfoScreen";
 import LoginScreen from "../Screens/LoginScreen";
+import CartScreen from "../Screens/CartScreen.js";
+import CategoryScreen from '../Screens/CategoryScreen';
+import ProductDetailsScreen from '../Screens/ProductDetailsScreen';
 
 const Stack = createNativeStackNavigator();
 export default function HeaderNav() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Loading" screenOptions={{ headerShown: false }} mode="modal">
+      <Stack.Navigator initialRouteName="Loading" screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Loading" component={LoadingScreen} />
         <Stack.Screen name="MainContainer" component={MainContainer} />
         <Stack.Screen name="Profile" component={ProfileScreen} />
@@ -29,12 +30,25 @@ export default function HeaderNav() {
         <Stack.Screen name="Sign Up" component={SignUp} />
         <Stack.Screen name="NfcScanner" component={NfcScannerScreen} />
         <Stack.Screen name="addProduct" component={AddProductScreen} />
-        <Stack.Screen name="TopTabNavigator" component={TopTabNavigator} />
         <Stack.Screen name="ExpositionScreen" component={ExpositionScreen} />
         <Stack.Screen name="VisitedProfile" component={VisitedProfile} />
         <Stack.Screen name="EditeInfo" component={EditeInfoScreen} />
         <Stack.Screen name="Login" component={LoginScreen} />
-
+        <Stack.Screen name="Cart" component={CartScreen} />
+        <Stack.Screen 
+          name="category" 
+          component={CategoryScreen}
+          options={{
+              headerShown: false
+          }}
+        />
+        <Stack.Screen 
+          name="ProductDetails" 
+          component={ProductDetailsScreen}
+          options={{
+              headerShown: false
+          }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

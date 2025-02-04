@@ -6,15 +6,6 @@ import axios from "axios";
 
 export default function SmallItem({ item }) {
   const navigation = useNavigation();
-  const [number, setNumber] = useState(0);
-  function handleNumber() {
-    axios.post("http://10.0.2.2:3001/getNumberByCategorie", { categorie: item.titre }).then((res) => {
-      setNumber(res.data.count);
-    })
-  }
-  useEffect(() => {
-    handleNumber();
-  }, [])
   return (
     <View
       key={item.id}
@@ -22,7 +13,7 @@ export default function SmallItem({ item }) {
       style={{ elevation: 4, position: "relative" }}
     >
       <Pressable onPress={() => {
-        navigation.navigate('TopTabNavigator', { categorie: item.titre });
+        navigation.navigate('category', { categorie: item.titre });
       }}
         style={{ marginRight: 3 }}>
         {/* <LinearGradient
