@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import {
     Image,
+    Platform,  // Add this import
     Pressable,
     StyleSheet,
     Text,
@@ -19,6 +20,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as ImagePicker from 'react-native-image-picker';
 import ProductPost from "../Common/ProductPost";
 import { Avatar, Button, Icon, Card } from 'react-native-elements';
+import { StatusBar } from 'expo-status-bar';
 
 const posts = [
     // { "id": 1, "imageUri": require("../../assets/products/p1.jpeg") },
@@ -59,7 +61,7 @@ const mockOrders = [
     }
 ];
 
-function ProfileScreen({ navigation, route }) {
+export default function ProfileScreen({ navigation }) {
     const [user, setUser] = useState({});
     const [isConnected, setIsConnected] = useState(false);
     const [image, setimage] = useState();
@@ -153,107 +155,97 @@ function ProfileScreen({ navigation, route }) {
         <ActivityIndicator size="large" color="#0000ff" />
     } else {
         return (
-            <GestureHandlerRootView>
-                <ScrollView>
-                    <View>
-                        <View style={styles.header}>
-                            <Icon name="arrow-back" type="material" color="#fff" onPress={() => { navigation.goBack() }} />
-                            <Text style={styles.username}>{user.nom} {user.prenom}</Text>
-                            <Icon name="search" type="material" color="#fff" />
-                        </View>
-                        {/* Profile Info */}
-                        <View style={styles.profileInfo}>
-                            <Image
-                                source={require('../../assets/images/img1.jpeg')}
-                                style={styles.bannerImage}
-                            />
+            <View style={styles.container}>
+                <StatusBar style="light" backgroundColor="#FF385C" />
+                <ScrollView 
+                    contentContainerStyle={styles.scrollContent}
+                    showsVerticalScrollIndicator={false}
+                >
+                    {/* Header Section */}
+                    <View style={styles.header}>
+                        <View style={styles.headerOverlay} />
+                        <View style={styles.profileHeader}>
                             <Avatar
                                 rounded
-                                size="xlarge"
+                                size={100}
                                 source={require('../../assets/images/img1.jpeg')}
                                 containerStyle={styles.avatar}
                             />
-
-
+                            <Text style={styles.profileName}>{user.nom} {user.prenom}</Text>
+                            {/* <Text style={styles.profileEmail}>{user.email}</Text> */}
                         </View>
-                        {/* Intro Section */}
-
-                        <View style={styles.introContainer}>
-                            <View style={styles.cardView}>
-                                <Text style={styles.name}>{user.nom} {user.prenom}</Text>
-                            </View>
-                            <View style={styles.introInfo}>
-                                <Ionicons name="call" size={15} color="#486FFB" />
-                                <Text>{user.contact}</Text>
-                            </View>
-                            <View style={styles.introInfo}>
-                                <Ionicons name="heart" size={15} color="#486FFB" />
-                                <Text>{user.email}</Text>
-                            </View>
-                            <View style={styles.introInfo}>
-                                <Ionicons name="pencil" size={15} color="#486FFB" />
-                                <Text>{user.adresse}</Text>
-                            </View>
-                        </View>
-
-                        {!isAdmin && (
-                            <View style={styles.ordersContainer}>
-                                <Text style={styles.ordersTitle}>Mes Commandes</Text>
-                                {orders.map((order) => (
-                                    <Card key={order.id} containerStyle={styles.orderCard}>
-                                        <View style={styles.orderHeader}>
-                                            <Text style={styles.orderNumber}>Commande #{order.id}</Text>
-                                            <Text style={[
-                                                styles.orderStatus,
-                                                {
-                                                    color: order.status === 'completed' ? 'green' :
-                                                        order.status === 'pending' ? 'orange' : 'red'
-                                                }
-                                            ]}>
-                                                {order.status}
-                                            </Text>
-                                        </View>
-                                        <View style={styles.orderDetails}>
-                                            <Text>Date: {new Date(order.date).toLocaleDateString()}</Text>
-                                            <Text>Total: {order.total}€</Text>
-                                        </View>
-                                        <TouchableOpacity
-                                            style={styles.viewDetailsButton}
-                                            onPress={() => navigation.navigate('OrderDetails', { orderId: order.id })}
-                                        >
-                                            <Text style={styles.viewDetailsText}>Voir détails</Text>
-                                        </TouchableOpacity>
-                                    </Card>
-                                ))}
-                            </View>
-                        )}
-
-                        {isAdmin &&
-                            <>
-                                <Text
-                                    style={{ marginTop: 47, marginLeft: 15, color: "#5f5f5b", fontSize: 15, fontWeight: 'bold' }}
-                                >
-                                    Mes produits :
-                                </Text>
-                                <View style={{ marginTop: 10 }}>
-                                    <FlatList
-                                        data={posts}
-                                        keyExtractor={(item) => item.idArtisant}
-                                        numColumns={3}
-                                        renderItem={({ item }) => <ProductPost item={item} />}
-                                        scrollEnabled={true}
-                                        showsHorizontalScrollIndicator={false}
-                                    />
-                                </View>
-                            </>}
                     </View>
+
+                    {/* Stats Section */}
+                    <View style={styles.statsContainer}>
+                        <View style={styles.statItem}>
+                            <Text style={styles.statNumber}>12</Text>
+                            <Text style={styles.statLabel}>Orders</Text>
+                        </View>
+                        <View style={styles.statDivider} />
+                        <View style={styles.statItem}>
+                            <Text style={styles.statNumber}>4</Text>
+                            <Text style={styles.statLabel}>Pending</Text>
+                        </View>
+                        <View style={styles.statDivider} />
+                        <View style={styles.statItem}>
+                            <Text style={styles.statNumber}>8</Text>
+                            <Text style={styles.statLabel}>Completed</Text>
+                        </View>
+                    </View>
+
+                    {/* Profile Actions */}
+                    <View style={styles.actionsContainer}>
+                        <TouchableOpacity style={styles.actionButton} onPress={() => navigation.navigate('EditProfile')}>
+                            <Ionicons name="pencil" size={20} color="#FF385C" />
+                            <Text style={styles.actionText}>Edit Profile</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.actionButton} onPress={() => navigation.navigate('Settings')}>
+                            <Ionicons name="settings-outline" size={20} color="#FF385C" />
+                            <Text style={styles.actionText}>Settings</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* Recent Orders */}
+                    <View style={styles.ordersContainer}>
+                        <Text style={styles.sectionTitle}>Recent Orders</Text>
+                        {orders.map((order) => (
+                            <TouchableOpacity 
+                                key={order.id} 
+                                style={styles.orderCard}
+                                onPress={() => navigation.navigate('OrderDetails', { orderId: order.id })}
+                            >
+                                <View style={styles.orderHeader}>
+                                    <View>
+                                        <Text style={styles.orderNumber}>Order #{order.id}</Text>
+                                        <Text style={styles.orderDate}>{new Date(order.date).toLocaleDateString()}</Text>
+                                    </View>
+                                    <Text style={[
+                                        styles.orderStatus,
+                                        styles[`status${order.status.charAt(0).toUpperCase() + order.status.slice(1)}`]
+                                    ]}>
+                                        {order.status}
+                                    </Text>
+                                </View>
+                                <View style={styles.orderFooter}>
+                                    <Text style={styles.orderTotal}>${order.total.toFixed(2)}</Text>
+                                    <Ionicons name="chevron-forward" size={20} color="#666" />
+                                </View>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+
+                    {/* Logout Button */}
+                    <TouchableOpacity style={styles.logoutButton} onPress={handleSignOut}>
+                        <Ionicons name="log-out-outline" size={20} color="#FF385C" />
+                        <Text style={styles.logoutText}>Log Out</Text>
+                    </TouchableOpacity>
                 </ScrollView>
-            </GestureHandlerRootView>
+            </View>
         );
     }
 
 }
-export default ProfileScreen;
 
 const styles = StyleSheet.create({
     containerInfos: {
@@ -402,181 +394,171 @@ const styles = StyleSheet.create({
 
     },
     header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingTop: 20,
-        backgroundColor: 'transparent',
-        zIndex: 10,
-        paddingHorizontal: 10,
-        fontWeight: '700'
+        height: 220,
+        backgroundColor: '#FF385C',
+        position: 'relative',
+        paddingTop: Platform?.OS === 'ios' ? 50 : 25, // Add optional chaining
     },
-    username: {
-        flex: 1,
-        color: '#fff',
-        fontSize: 22,
-        textAlign: 'center',
-        fontWeight: '700'
+    headerOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(0,0,0,0.1)',
     },
-    profileInfo: {
+    profileHeader: {
         alignItems: 'center',
-        marginTop: -50,
         justifyContent: 'center',
-
-    },
-    bannerImage: {
-        width: '100%',
-        height: 150,
+        height: '100%',
     },
     avatar: {
-        position: 'absolute',
-        top: 100,
-        borderWidth: 5,
-        borderColor: '#fff',
-        marginRight: 0,
-        zIndex: 10,
+        borderWidth: 4,
+        borderColor: '#FFFFFF',
+    },
+    profileName: {
+        color: '#FFFFFF',
+        fontSize: 24,
+        fontWeight: '600',
+        marginTop: 8,
+        marginBottom: 8,
+    },
+    profileEmail: {
+        color: '#FFFFFF',
+        opacity: 0.8,
+        fontSize: 16,
+    },
+    statsContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        padding: 20,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 15,
+        marginHorizontal: 16,
+        marginTop: -30,
+        elevation: 4,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+    },
+    statItem: {
+        alignItems: 'center',
+    },
+    statNumber: {
+        fontSize: 20,
+        fontWeight: '600',
+        color: '#FF385C',
+    },
+    statLabel: {
+        color: '#666',
+        marginTop: 4,
+    },
+    statDivider: {
+        width: 1,
+        backgroundColor: '#E0E0E0',
+    },
+    actionsContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        padding: 16,
+        marginTop: 16,
+    },
+    actionButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#FFF0F3',
+        padding: 12,
+        borderRadius: 12,
+        width: '45%',
         justifyContent: 'center',
     },
-    name: {
+    actionText: {
+        marginLeft: 8,
+        color: '#FF385C',
+        fontWeight: '500',
+    },
+    sectionTitle: {
         fontSize: 20,
-        fontWeight: 'bold',
-        marginTop: 5,
-    },
-    subText: {
-        color: 'gray',
-        marginTop: 4,
-        marginLeft: 5
-    },
-    cardView: {
-        alignSelf: "center",
-        paddingBottom: 1,
-        alignItems: "center",
-        paddingLeft: 10,
-        paddingTop: 15,
-        position: 'relative',
-        marginTop: 20,
-        marginBottom: 20,
-    },
-    publishButton: {
-        backgroundColor: '#FFD700',
-        paddingVertical: 10,
-        borderRadius: 25,
-        paddingHorizontal: 5,
-        alignItems: 'center',
-        width: '35%',
-        display: "flex",
-        marginBottom: 20
-    },
-    buttonContainer: {
-        display: 'flex',
-        flexDirection: 'row',
-        marginTop: 16,
-        alignSelf: 'flex-end',
-        gap: 10,
-        paddingHorizontal: 20,
-        // borderWidth:1,
-        width: "100%",
-        justifyContent: "flex-end"
-    },
-    linkButton: {
-        alignSelf: "flex-start",
-        backgroundColor: '#FF52C0',
-        padding: 10,
-        borderRadius: 20,
-        marginTop: 16,
-        marginLeft: 20,
-        position: 'absolute',
-        top: 250,
-        zIndex: 10,
-        width: "30%",
-
-    },
-    linkButtonText: {
-        color: 'white',
-        fontWeight: 'bold',
-        textAlign: 'center'
-    },
-    introContainer: {
-        paddingHorizontal: 10,
-        marginTop: 60,
-        shadowColor: "#000",
-        shadowOpacity: 0.1,
-        shadowRadius: 10,
-        shadowOffset: { width: 0, height: 2 },
-        elevation: 4,
-        backgroundColor: "rgba(255, 255, 255, 0.9)",
-        borderRadius: 8,
-        marginHorizontal: 15,
-        position: 'relative',
-        paddingBottom: 10
-
-    },
-    introTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: 'black',
-    },
-    introText: {
-        fontSize: 14,
-        marginTop: 4,
-    },
-    heading: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        marginVertical: 5,
-    },
-    headingPosts: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        paddingLeft: 10,
-        marginBottom: 20
-    },
-    introInfo: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 10,
-        paddingLeft: 10,
-        marginBottom: 10
-    },
-    ordersContainer: {
-        padding: 15,
-        marginTop: 20,
-    },
-    ordersTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        marginBottom: 15,
+        fontWeight: '600',
         color: '#333',
+        marginBottom: 16,
+        marginLeft: 16,
     },
     orderCard: {
-        borderRadius: 10,
-        marginBottom: 10,
-        padding: 15,
-        elevation: 3,
+        backgroundColor: '#FFFFFF',
+        marginHorizontal: 16,
+        marginBottom: 12,
+        borderRadius: 12,
+        padding: 16,
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
     },
     orderHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 10,
+        alignItems: 'flex-start',
     },
     orderNumber: {
         fontSize: 16,
-        fontWeight: 'bold',
+        fontWeight: '600',
+        color: '#333',
+    },
+    orderDate: {
+        color: '#666',
+        fontSize: 14,
+        marginTop: 4,
     },
     orderStatus: {
-        fontWeight: 'bold',
+        paddingHorizontal: 12,
+        paddingVertical: 4,
+        borderRadius: 12,
+        fontSize: 12,
+        fontWeight: '600',
+        textTransform: 'capitalize',
     },
-    orderDetails: {
-        marginBottom: 10,
+    statusCompleted: {
+        backgroundColor: '#E8F5E9',
+        color: '#2E7D32',
     },
-    viewDetailsButton: {
-        backgroundColor: '#486FFB',
-        padding: 10,
-        borderRadius: 5,
+    statusPending: {
+        backgroundColor: '#FFF3E0',
+        color: '#EF6C00',
+    },
+    statusCancelled: {
+        backgroundColor: '#FFEBEE',
+        color: '#C62828',
+    },
+    orderFooter: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
         alignItems: 'center',
+        marginTop: 12,
+        paddingTop: 12,
+        borderTopWidth: 1,
+        borderTopColor: '#F0F0F0',
     },
-    viewDetailsText: {
-        color: 'white',
-        fontWeight: 'bold',
+    orderTotal: {
+        fontSize: 18,
+        fontWeight: '600',
+        color: '#FF385C',
+    },
+    logoutButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginHorizontal: 16,
+        marginVertical: 24,
+        marginBottom: 40, // Added extra bottom margin
+        padding: 16,
+        backgroundColor: '#FFF0F3',
+        borderRadius: 12,
+    },
+    container: {
+        flex: 1,
+        backgroundColor: '#FFFFFF',
+    },
+    scrollContent: {
+        flexGrow: 1,
+        paddingBottom: 90, // Increased padding to account for navbar
     },
 });

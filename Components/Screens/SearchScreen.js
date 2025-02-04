@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { View, ActivityIndicator, Pressable, RefreshControl, StyleSheet, Text } from 'react-native';
+import { View, ActivityIndicator, Pressable, RefreshControl, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlatList, GestureHandlerRootView, TextInput } from 'react-native-gesture-handler';
 import axios from 'axios';
 import Ionicons from "react-native-vector-icons/Ionicons";
-import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import ProductPost from '../Common/ProductPost';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 const Tab = createMaterialTopTabNavigator();
@@ -83,48 +82,39 @@ export default function SearchScreen() {
     //     )
     // }
     return (
-        <GestureHandlerRootView style={styles.container}>
-            <SafeAreaView>
-                <View style={styles.searchContainer}>
-                    <View style={styles.searchBar}>
-                        <Ionicons name='search' size={22} color="#666" />
-                        <TextInput 
-                            placeholder='Search for clothes, accessories...' 
-                            placeholderTextColor="#999"
-                            style={styles.searchInput} 
-                            onChangeText={(e) => { setInput(e); }}
-                        />
+        <GestureHandlerRootView className="bg-[#F5F5F5] pt-3">
+            <SafeAreaView >
+                <Pressable >
+                    <View style={styles.rechercheView}>
+                        <View style={{ flexDirection: 'row', gap: 10 }}>
+                            <Ionicons name='search' size={25} />
+                            <TextInput placeholder='Recherche' style={styles.recherche} onChangeText={(e) => { setInput(e); }} />
+                        </View>
                     </View>
-                    <Pressable style={styles.filterButton}>
-                        <MaterialIcons name="tune" size={22} color="#FF385C" />
-                    </Pressable>
-                </View>
+                </Pressable>
 
                 <Tab.Navigator
+                    // initialRouteName={HomeRoute}
                     screenOptions={({ route }) => ({
-                        tabBarLabel: ({ focused }) => (
-                            <Text style={[
-                                styles.tabLabel,
-                                focused && styles.tabLabelActive
-                            ]}>
-                                {route.name}
-                            </Text>
-                        ),
-                        tabBarIcon: ({ focused }) => {
-                            let iconName;
-                            if (route.name === 'All') iconName = 'grid';
-                            else if (route.name === 'Women') iconName = 'woman';
-                            else if (route.name === 'Men') iconName = 'man';
-                            else if (route.name === 'Kids') iconName = 'people';
-                            
-                            return <Ionicons 
-                                name={iconName} 
-                                size={20} 
-                                color={focused ? '#FF385C' : '#666'} 
-                            />;
-                        },
+                        tabBarLabel: route.name,
+                        tabBarLabelStyle: { fontSize: 14, fontWeight: '600' },
                         tabBarStyle: styles.tabBar,
-                        tabBarIndicatorStyle: styles.tabIndicator,
+                        tabBarActiveTintColor: '#486FFB',
+                        tabBarInactiveTintColor: 'gray',
+                        tabBarIndicatorStyle: {
+                            height: 1,
+                            backgroundColor: '#486FFB',
+                        },
+                        // tabBarIconStyle: {
+                        //     marginHorizontal: 20,
+                        //     width: "auto",
+                        //     height: 100
+                        // },
+                        // tabBarGap: 120,
+                        tabBarItemStyle: {
+                            justifyContent: "space-between",
+                            marginHorizontal: 0,
+                        },
                     })}
                 >
                     <Tab.Screen name="All" component={() => { console.log("cickled") }} />
@@ -134,83 +124,24 @@ export default function SearchScreen() {
 
                 </Tab.Navigator>
 
-                <View style={styles.listContainer}>
-                    <FlatList 
-                        contentContainerStyle={styles.flatListContent}
-                        refreshControl={<RefreshControl onRefresh={handleRefresh} />} 
-                        data={data} 
-                        keyExtractor={(item) => item.idArtisant} 
-                        numColumns={3} 
-                        showsVerticalScrollIndicator={false} 
-                        renderItem={({ item }) => {
-                            if (input == "") {
-                                return <ProductPost item={item} />;
-                            } else if (item.titre.toLocaleLowerCase().includes(input.toLocaleLowerCase())) {
-                                return <ProductPost item={item} />;
-                            }
-                        }} 
-                    />
+
+
+
+                <View className="w-full h-[76%] mt-1  items-center">
+                    <FlatList refreshControl={<RefreshControl onRefresh={handleRefresh} />} data={data} keyExtractor={(item) => item.idArtisant} numColumns={3} showsVerticalScrollIndicator={false} renderItem={({ item }) => {
+                        if (input == "") {
+                            return <ProductPost item={item} />;
+                        } else if (item.titre.toLocaleLowerCase().includes(input.toLocaleLowerCase())) {
+                            return <ProductPost item={item} />;
+                        }
+                    }} />
                 </View>
 
             </SafeAreaView>
-        </GestureHandlerRootView>
+        </GestureHandlerRootView >
     )
 }
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#FFFFFF',
-    },
-    searchContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-        gap: 12,
-    },
-    searchBar: {
-        flex: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#F5F5F5',
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-        borderRadius: 12,
-        gap: 12,
-    },
-    searchInput: {
-        flex: 1,
-        fontSize: 16,
-        color: '#333',
-    },
-    filterButton: {
-        padding: 12,
-        backgroundColor: '#FFF0F3',
-        borderRadius: 12,
-    },
-    tabBar: {
-        backgroundColor: 'white',
-        elevation: 0,
-        shadowOpacity: 0,
-        height: 70,
-        borderBottomWidth: 1,
-        borderBottomColor: '#F0F0F0',
-    },
-    tabLabel: {
-        fontSize: 13,
-        fontWeight: '500',
-        color: '#666',
-        marginTop: 4,
-    },
-    tabLabelActive: {
-        color: '#FF385C',
-        fontWeight: '600',
-    },
-    tabIndicator: {
-        height: 3,
-        borderRadius: 3,
-        backgroundColor: '#FF385C',
-    },
     rechercheView: {
         borderRadius: 15,
         borderBlockColor: 'grey',
@@ -226,13 +157,14 @@ const styles = StyleSheet.create({
         width: "90%",
         justifyContent: 'space-between'
     },
-    listContainer: {
-        flex: 1,
-        height: '76%',
-        marginTop: 1,
-        alignItems: 'center',
-    },
-    flatListContent: {
-        paddingBottom: 100, // Add padding to account for floating navbar
+    tabBar: {
+        backgroundColor: 'white',
+        elevation: 0,
+        shadowOpacity: 0,
+        height: 100,
+        width: "100%",
+        paddingHorizontal: 0,
+        justifyContent: "space-between",
+        marginTop: 20
     },
 })

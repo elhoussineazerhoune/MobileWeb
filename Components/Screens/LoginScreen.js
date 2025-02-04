@@ -12,7 +12,7 @@ export default function LoginScreen({ navigation }) {
     // Function to handle login request
     function handleLogin() {
         axios
-            .post("http://10.0.2.2:3306/api/client/login", { username, password })
+            .post("http://10.0.2.2:3306/api/client/login", { email:username, password })
             .then((res) => {
                 if (res.data.error) {
                     // email or password incorrect
@@ -30,12 +30,12 @@ export default function LoginScreen({ navigation }) {
     return (
         <View style={styles.container}>
             <View style={styles.formContainer}>
-                <Text style={styles.title}>Sign In</Text>
+                <Text style={styles.title}>S'inscrire</Text>
 
                 <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Username</Text>
+                    <Text style={styles.label}>Nom d'utilisateur</Text>
                     <TextInput
-                        placeholder="Enter your username"
+                        placeholder="Entrez votre nom d'utilisateur"
                         style={styles.TextInput}
                         onChangeText={(username) => setUsername(username)}
                         placeholderTextColor="#9FA5C0"
@@ -43,9 +43,9 @@ export default function LoginScreen({ navigation }) {
                 </View>
 
                 <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Password</Text>
+                    <Text style={styles.label}>Mot de passe</Text>
                     <TextInput
-                        placeholder="Enter your password"
+                        placeholder="Entrez votre mot de passe"
                         secureTextEntry={true}
                         style={styles.TextInput}
                         onChangeText={(password) => setPassword(password)}
@@ -56,18 +56,18 @@ export default function LoginScreen({ navigation }) {
                 {message && <Text style={styles.errorMessage}>{message}</Text>}
 
                 <Pressable style={styles.loginButton} onPress={handleLogin}>
-                    <Text style={styles.loginButtonText}>Login</Text>
+                    <Text style={styles.loginButtonText}>Se connecter</Text>
                 </Pressable>
 
                 <Pressable onPress={() => {}}>
-                    <Text style={styles.forgotPassword}>Forgot Password?</Text>
+                    <Text style={styles.forgotPassword}>Mot de passe oublié ?</Text>
                 </Pressable>
 
                 <Pressable
                     style={styles.createAccountButton}
                     onPress={() => navigation.navigate("Sign Up")}
                 >
-                    <Text style={styles.createAccountText}>Create Artisan Account</Text>
+                    <Text style={styles.createAccountText}>Créer un compte artisan</Text>
                 </Pressable>
             </View>
         </View>
@@ -103,13 +103,13 @@ const styles = StyleSheet.create({
         fontWeight: '500',
     },
     TextInput: {
-        backgroundColor: '#FFFFFF',
+        backgroundColor: '#F7F8F9',
         borderRadius: 12,
         padding: 15,
         fontSize: 16,
         borderWidth: 1,
-        borderColor: '#FFD1D9',
-        shadowColor: '#FF385C',
+        borderColor: '#E8E8E8',
+        shadowColor: '#000',
         shadowOffset: {
             width: 0,
             height: 1,
@@ -119,11 +119,11 @@ const styles = StyleSheet.create({
         elevation: 2,
     },
     loginButton: {
-        backgroundColor: '#FF385C',
+        backgroundColor: 'deepskyblue',
         paddingVertical: 16,
         borderRadius: 12,
         marginTop: 20,
-        shadowColor: '#FF385C',
+        shadowColor: '#FF9500',
         shadowOffset: {
             width: 0,
             height: 4,
@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
     forgotPassword: {
-        color: '#FF385C',
+        color: '#FF4444',
         textAlign: 'center',
         marginTop: 16,
         fontSize: 15,
@@ -147,19 +147,19 @@ const styles = StyleSheet.create({
     },
     createAccountButton: {
         borderWidth: 2,
-        borderColor: '#FF385C',
+        borderColor: '#1A1A1A',
         borderRadius: 12,
         paddingVertical: 14,
         marginTop: 30,
     },
     createAccountText: {
-        color: '#FF385C',
+        color: '#1A1A1A',
         textAlign: 'center',
         fontSize: 16,
         fontWeight: '600',
     },
     errorMessage: {
-        color: '#FF385C',
+        color: '#FF4444',
         textAlign: 'center',
         marginTop: 10,
         fontSize: 14,
