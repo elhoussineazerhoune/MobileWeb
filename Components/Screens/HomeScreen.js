@@ -29,13 +29,9 @@ export default function HomeScreen({ navigation }) {
     
     return (
         <GestureHandlerRootView>
-            <SafeAreaView style={styles.safeArea}>
+            <SafeAreaView className="mb-15">
                 <StatusBar backgroundColor='transparent' style="dark" />
-                <ScrollView 
-                    style={styles.scrollView} 
-                    showsVerticalScrollIndicator={false}
-                    contentContainerStyle={styles.scrollViewContent}
-                >
+                <ScrollView className="bg-white mb-15" showsVerticalScrollIndicator={false}>
                     <View style={styles.header}>
                         <View style={styles.titleContainer}>
 
@@ -165,14 +161,5 @@ const styles = StyleSheet.create({
         fontFamily: 'Poppins-SemiBold',
         color: 'white',
         fontSize: 12,
-    },
-    safeArea: {
-        flex: 1,
-    },
-    scrollView: {
-        backgroundColor: 'white',
-    },
-    scrollViewContent: {
-        paddingBottom: 100, // Add padding to account for floating navbar
     },
 });
