@@ -34,12 +34,7 @@ export default function HomeScreen({ navigation }) {
                 <ScrollView className="bg-white mb-15" showsVerticalScrollIndicator={false}>
                     <View style={styles.header}>
                         <View style={styles.titleContainer}>
-                            <Animated.Text 
-                                style={styles.welcomeText} 
-                                entering={FadeInLeft.duration(500)}
-                            >
-                                Welcome to
-                            </Animated.Text>
+
                             <Animated.Text 
                                 style={styles.mainTitle}
                                 entering={FadeInLeft.duration(500).delay(100)}
@@ -119,9 +114,10 @@ const styles = StyleSheet.create({
     },
     mainTitle: {
         fontFamily: 'Poppins-Bold',
-        fontSize: 24,
+        fontSize: 20,
         color: '#333',
         lineHeight: 32,
+        marginBottom: 8,
     },
     searchContainer: {
         marginHorizontal: 20,
