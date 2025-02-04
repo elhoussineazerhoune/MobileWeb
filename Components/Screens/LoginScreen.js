@@ -12,7 +12,7 @@ export default function LoginScreen({ navigation }) {
     // Function to handle login request
     function handleLogin() {
         axios
-            .post("http://10.0.2.2:3001/login", { username, password })
+            .post("http://10.0.2.2:3306/api/client/login", { username, password })
             .then((res) => {
                 if (res.data.error) {
                     // email or password incorrect
@@ -29,104 +29,139 @@ export default function LoginScreen({ navigation }) {
     }
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Espace Artisan</Text>
+            <View style={styles.formContainer}>
+                <Text style={styles.title}>S'inscrire</Text>
 
-            <Text style={styles.label}>Nom d'utilisateur : </Text>
+                <View style={styles.inputGroup}>
+                    <Text style={styles.label}>Nom d'utilisateur</Text>
+                    <TextInput
+                        placeholder="Entrez votre nom d'utilisateur"
+                        style={styles.TextInput}
+                        onChangeText={(username) => setUsername(username)}
+                        placeholderTextColor="#9FA5C0"
+                    />
+                </View>
 
-            <TextInput
-                placeholder="Entrez votre nom d'utilisateur"
-                style={styles.TextInput}
-                onChangeText={(username) => setUsername(username)}
-            ></TextInput>
-            <Text style={styles.label}>Mot de passe : </Text>
-            <TextInput
-                placeholder="Entrez votre mot de passe"
-                secureTextEntry={true}
-                style={styles.TextInput}
-                onChangeText={(password) => setPassword(password)}
-            ></TextInput>
-            <Text className="self-center">{message}</Text>
-            <Pressable style={styles.Pressable} onPress={handleLogin}>
-                <Text style={styles.Text_pressable} >
-                    se connecter
-                </Text>
-            </Pressable>
-            <Pressable>
-                <Text style={styles.forgot_passwd}>Mot de passe oublié ?</Text>
-            </Pressable>
+                <View style={styles.inputGroup}>
+                    <Text style={styles.label}>Mot de passe</Text>
+                    <TextInput
+                        placeholder="Entrez votre mot de passe"
+                        secureTextEntry={true}
+                        style={styles.TextInput}
+                        onChangeText={(password) => setPassword(password)}
+                        placeholderTextColor="#9FA5C0"
+                    />
+                </View>
 
-            <Pressable
-                style={styles.Pressable_of_creating_account}
-                onPress={() => navigation.navigate("Sign Up")}
-            >
-                <Text>Créer un compte artisan</Text>
-            </Pressable>
+                {message && <Text style={styles.errorMessage}>{message}</Text>}
+
+                <Pressable style={styles.loginButton} onPress={handleLogin}>
+                    <Text style={styles.loginButtonText}>Se connecter</Text>
+                </Pressable>
+
+                <Pressable onPress={() => {}}>
+                    <Text style={styles.forgotPassword}>Mot de passe oublié ?</Text>
+                </Pressable>
+
+                <Pressable
+                    style={styles.createAccountButton}
+                    onPress={() => navigation.navigate("Sign Up")}
+                >
+                    <Text style={styles.createAccountText}>Créer un compte artisan</Text>
+                </Pressable>
+            </View>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: "#f8f9fa",
-        width: "auto",
-        height: "auto",
         flex: 1,
-    },
-    TextInput: {
-        borderWidth: 1,
-        borderColor: "#7d8597",
-        backgroundColor: "white",
-        display: "flex",
-        alignItems: "center",
-        borderRadius: 10,
-        marginHorizontal: 30,
-        marginVertical: 10,
+        backgroundColor: '#FFFFFF',
         paddingHorizontal: 20,
-        paddingVertical: 10,
     },
-    Pressable: {
-        backgroundColor: "#ff9500",
-        paddingVertical: 15,
-        borderRadius: 30,
-        alignContent: "center",
-        marginHorizontal: 30,
-        marginVertical: 20,
-        marginBottom: 0,
-    },
-    Text_pressable: {
-        textAlign: "center",
-        color: "white",
-        fontWeight: "bold",
-        fontSize: 17,
+    formContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        marginTop: -40,
     },
     title: {
-        textAlign: "center",
-        fontSize: 40,
-        marginTop: 100,
-        marginBottom: 30,
-        fontFamily: "Rubik-Bold",
+        fontSize: 32,
+        fontWeight: 'bold',
+        color: '#1A1A1A',
+        marginBottom: 40,
+        textAlign: 'center',
+    },
+    inputGroup: {
+        marginBottom: 20,
     },
     label: {
-        textAlign: "left",
-        fontSize: 14,
-        color: "black",
-        marginBottom: 5,
-        marginLeft: 10,
+        fontSize: 16,
+        color: '#1A1A1A',
+        marginBottom: 8,
+        marginLeft: 4,
+        fontWeight: '500',
     },
-    forgot_passwd: {
-        textAlign: "right",
-        color: "red",
-        marginRight: 20,
-        marginBottom: 30,
+    TextInput: {
+        backgroundColor: '#F7F8F9',
+        borderRadius: 12,
+        padding: 15,
+        fontSize: 16,
+        borderWidth: 1,
+        borderColor: '#E8E8E8',
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 1,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 3,
+        elevation: 2,
     },
-    Pressable_of_creating_account: {
-        alignItems: "center",
-        backgroundColor: "#f8f9fa",
-        paddingHorizontal: 40,
-        paddingVertical: 15,
-        borderColor: "#000",
+    loginButton: {
+        backgroundColor: 'deepskyblue',
+        paddingVertical: 16,
+        borderRadius: 12,
+        marginTop: 20,
+        shadowColor: '#FF9500',
+        shadowOffset: {
+            width: 0,
+            height: 4,
+        },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+        elevation: 4,
+    },
+    loginButtonText: {
+        color: '#FFFFFF',
+        textAlign: 'center',
+        fontSize: 18,
+        fontWeight: '600',
+    },
+    forgotPassword: {
+        color: '#FF4444',
+        textAlign: 'center',
+        marginTop: 16,
+        fontSize: 15,
+        fontWeight: '500',
+    },
+    createAccountButton: {
         borderWidth: 2,
-        borderRadius: 40,
-        marginHorizontal: 40,
+        borderColor: '#1A1A1A',
+        borderRadius: 12,
+        paddingVertical: 14,
+        marginTop: 30,
+    },
+    createAccountText: {
+        color: '#1A1A1A',
+        textAlign: 'center',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    errorMessage: {
+        color: '#FF4444',
+        textAlign: 'center',
+        marginTop: 10,
+        fontSize: 14,
     },
 });

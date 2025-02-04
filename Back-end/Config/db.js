@@ -36,14 +36,14 @@ class Database {
       // Vous pouvez décommenter cette ligne pour synchroniser les modèles si nécessaire
 
 
-      await this.sequelize.sync({ alter: true })
-        .then(() => {
-          console.log("Database synchronized");
-        })
-        .catch((error) => {
-          console.error("Error synchronizing the database:", error);
-        });
-      console.log("data base updated");
+      // await this.sequelize.sync({ alter: true })
+      //   .then(() => {
+      //     console.log("Database synchronized");
+      //   })
+      //   .catch((error) => {
+      //     console.error("Error synchronizing the database:", error);
+      //   });
+      // console.log("data base updated");
     } catch (error) {
       console.error("Erreur lors de la connexion à la base de données :", error);
       throw error;

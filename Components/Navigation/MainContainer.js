@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
@@ -7,7 +6,6 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 // Screens
 import HomeScreen from "../Screens/HomeScreen";
 import SettingsScreen from "../Screens/SettingsScreen";
-import ScannerScreen from "../Screens/NfcScannerScreen";
 import SearchScreen from "../Screens/SearchScreen";
 import LoginScreen from "../Screens/LoginScreen";
 import ProfileScreen from "../Screens/ProfileScreen";
@@ -24,7 +22,7 @@ export default function MainContainer() {
     const [token, setToken] = useState();
 
     async function handleToken() {
-        const token = await AsyncStorage.getItem("token");
+        const token = await AsyncStorage.getItem("ClientToken");
         setToken(token);
     }
     handleToken();

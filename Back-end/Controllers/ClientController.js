@@ -167,7 +167,7 @@ const loginuser = async (req, res) => {
   }
 };
 const registeruser = async (req, res) => {
-  const { email, password, name, prenom, adresse, contact } = req.body;
+  const { email, password, name, lastname, adresse, contact } = req.body;
   try {
     const exists = await Client.findOne({ where: { email: email } });
     if (exists) {
@@ -190,7 +190,7 @@ const registeruser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
     const newClient = Client.create({
       nom: name,
-      prenom: prenom,
+      prenom: lastname,
       email: email,
       password: hashedPassword,
       adresse: adresse,
