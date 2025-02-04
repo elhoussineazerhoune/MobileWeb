@@ -8,7 +8,7 @@ const data = [
     { "id": 1, "name": "phill foden", "userImg": require('../../assets/images/img1.jpeg'), "postImg": require('../../assets/products/p4.jpeg'), "like": 220, "dislike": 10 },
     { "id": 1, "name": "earling halland", "userImg": require('../../assets/images/img1.jpeg'), "postImg": require('../../assets/products/p5.jpeg'), "like": 100, "dislike": 10 },
     { "id": 1, "name": "bernardo silva", "userImg": require('../../assets/images/img1.jpeg'), "postImg": require('../../assets/products/p2.jpeg'), "like": 100, "dislike": 10 },
-    { "id": 1, "name": "kevin debrauny", "userImg": require('../../assets/images/img1.jpeg'), "postImg": require('../../assets/products/p4.jpeg'), "like": 100, "dislike": 10 },
+    { "id": 1, "name": "kevin debrauyne", "userImg": require('../../assets/images/img1.jpeg'), "postImg": require('../../assets/products/p4.jpeg'), "like": 100, "dislike": 10 },
 ]
 const Posts = () => {
     return (
