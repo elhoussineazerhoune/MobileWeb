@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
+import { Platform, Dimensions } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { BlurView } from "expo-blur";
 
 // Screens
 import HomeScreen from "../Screens/HomeScreen";
@@ -16,6 +18,8 @@ const SettingsName = "Settings";
 const DetailsName = "Details";
 const searchName = "Search";
 const LoginName = "Login";
+
+const { width } = Dimensions.get('window');
 
 const Tab = createBottomTabNavigator();
 export default function MainContainer() {
@@ -49,21 +53,61 @@ export default function MainContainer() {
                             iconName = token ? "person-outline" : "log-in-outline";
                         }
                     }
-                    return <Ionicons name={iconName} size={30} color={color} />;
+                    return (
+                        <Ionicons 
+                            name={iconName} 
+                            size={24} 
+                            color={color}
+                            style={{
+                                transform: [{ scale: focused ? 1.2 : 1 }],
+                            }}
+                        />
+                    );
                 },
                 headerShown: false,
                 tabBarStyle: {
-                    height: 60,
-                    position: "absolute",
-                    margin: 20,
-                    borderRadius: 13,
-                    justifyContent: "center",
-                    alignItems: "center",
-                    backgroundColor: "rgba(255, 255, 255, 0.85)",
-                    overflow: "hidden",
+                    height: 60, // Slightly reduced height
+                    position: 'absolute',
+                    bottom: Platform.OS === 'ios' ? 34 : 24, // Increased bottom margin
+                    left: 16,
+                    right: 16,
+                    borderRadius: 20,
+                    backgroundColor: Platform.OS === 'ios' ? 'rgba(255, 255, 255, 0.9)' : 'white',
+                    borderTopWidth: 0,
+                    elevation: 20,
+                    shadowColor: '#000',
+                    shadowOffset: {
+                        width: 0,
+                        height: 4,
+                    },
+                    shadowOpacity: 0.15,
+                    shadowRadius: 10,
+                    paddingBottom: Platform.OS === 'ios' ? 20 : 10,
+                    paddingTop: 10,
                 },
-                tabBarActiveTintColor: "#59D6FF",
-                tabBarInactiveTintColor: "gray",
+                tabBarBackground: Platform.OS === 'ios' ? () => (
+                    <BlurView
+                        tint="light"
+                        intensity={80}
+                        style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            borderRadius: 20,
+                        }}
+                    />
+                ) : undefined,
+                tabBarActiveTintColor: "#FF385C",
+                tabBarInactiveTintColor: "#858585",
+                tabBarShowLabel: false,
+                tabBarItemStyle: {
+                    padding: 4,
+                },
+                tabBarIconStyle: {
+                    transform: [{ translateY: -2 }],
+                },
             })}
         >
             <Tab.Screen

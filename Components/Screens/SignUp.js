@@ -36,106 +36,95 @@ export default function SignUp({ navigation }) {
     return (
         <ScrollView vertical={true} style={styles.container}>
             <Pressable style={styles.back_pressable} onPress={() => navigation.goBack()}>
-                <Ionicons name="chevron-back" size={23} />
+                <Ionicons name="chevron-back" size={23} color="#4A90E2" />
             </Pressable>
 
-            <Text style={styles.title}>Créer un compte</Text>
+            <Text style={styles.title}>Create Account</Text>
 
             <View style={{ flexDirection: "column" }}>
-                <Text style={styles.label}>Prénom</Text>
+                <Text style={styles.label}>First Name</Text>
                 <TextInput
-                    placeholder="Entrez votre prénom"
+                    placeholder="Enter your first name"
                     style={styles.TextInput}
                     onChangeText={(text) => { setNameInput(text) }} />
 
-                <Text style={styles.label}>Nom</Text>
+                <Text style={styles.label}>Last Name</Text>
                 <TextInput
-                    placeholder="Entrez votre nom"
+                    placeholder="Enter your last name"
                     style={styles.TextInput}
-                    onChangeText={(text) => {
-                        setLastnameInput(text);
-                    }}
+                    onChangeText={(text) => { setLastnameInput(text); }}
                 />
 
-                <Text style={styles.label}>Adresse</Text>
+                <Text style={styles.label}>Address</Text>
                 <TextInput
-                    placeholder="Entrez votre adresse"
+                    placeholder="Enter your address"
                     style={styles.TextInput}
                     onChangeText={(text) => {
-                        text.length <= 10
-                            ? setInvalidAdresse(true)
-                            : setInvalidAdresse(false);
+                        text.length <= 10 ? setInvalidAdresse(true) : setInvalidAdresse(false);
                         setAdresseInput(text);
                     }}
                 />
                 {invalidAdresse && (
                     <Text style={styles.errorText}>
-                        (min 10 caractères)
+                        (min 10 characters)
                     </Text>
                 )}
 
                 <Text style={styles.label}>Contact</Text>
                 <TextInput
-                    placeholder="Entrez votre contact"
+                    placeholder="Enter your contact number"
                     style={styles.TextInput}
                     keyboardType="numeric"
                     onChangeText={(text) => {
                         text.length <= 8 ? setInvalidContact(true) : setInvalidContact(false);
                         setContactInput(text)
                     }} />
-                {invalidContact && <Text style={styles.errorText}>(min 10 caractères)</Text>}
-
+                {invalidContact && <Text style={styles.errorText}>(min 10 characters)</Text>}
 
                 <Text style={styles.label}>Email</Text>
                 <TextInput
-                    placeholder="Entrez votre email"
+                    placeholder="Enter your email"
                     style={styles.TextInput}
                     onChangeText={(text) => {
-                        text.length <= 10
-                            ? setInvalidEmail(true)
-                            : setInvalidEmail(false);
+                        text.length <= 10 ? setInvalidEmail(true) : setInvalidEmail(false);
                         setEmailInput(text);
                     }}
                 />
                 {invalidEmail && (
                     <Text style={styles.errorText}>
-                        (min 10 caractères)
+                        (min 10 characters)
                     </Text>
                 )}
 
-                <Text style={styles.label}>Mot de passe</Text>
+                <Text style={styles.label}>Password</Text>
                 <TextInput
-                    placeholder="Entrez votre mot de passe"
+                    placeholder="Enter your password"
                     style={styles.TextInput}
                     secureTextEntry
                     onChangeText={(text) => {
-                        text.length < 10
-                            ? setInvalidPassword(true)
-                            : setInvalidPassword(false);
+                        text.length < 10 ? setInvalidPassword(true) : setInvalidPassword(false);
                         setPasswordInput(text);
                     }}
                 />
                 {invalidPassword && (
                     <Text style={styles.errorText}>
-                        (min 10 caractères)
+                        (min 10 characters)
                     </Text>
                 )}
 
-                <Text style={styles.label}>Confirmez le mot de passe</Text>
+                <Text style={styles.label}>Confirm Password</Text>
                 <TextInput
-                    placeholder="Confirmez votre mot de passe"
+                    placeholder="Confirm your password"
                     style={styles.TextInput}
                     secureTextEntry
                     onChangeText={(text) => {
-                        text != password
-                            ? setInvalidNewPassword(true)
-                            : setInvalidNewPassword(false);
+                        text != password ? setInvalidNewPassword(true) : setInvalidNewPassword(false);
                         setNewPasswordInput(text);
                     }}
                 />
                 {invalidNewPassword && (
                     <Text style={styles.errorText}>
-                        (les mots de passe doivent être identiques)
+                        (passwords must match)
                     </Text>
                 )}
 
@@ -154,7 +143,7 @@ export default function SignUp({ navigation }) {
                         }
                     }}
                 >
-                    <Text style={styles.Text_pressable}>Créer un compte</Text>
+                    <Text style={styles.Text_pressable}>Create Account</Text>
                 </Pressable>
             </View>
         </ScrollView>
@@ -163,17 +152,19 @@ export default function SignUp({ navigation }) {
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: "#ffffff",
+        backgroundColor: "#F5F7FA",
         flex: 1,
         paddingHorizontal: 20,
     },
     TextInput: {
-        backgroundColor: "#f8f9fa",
-        borderRadius: 12,
+        backgroundColor: "#FFFFFF",
+        borderRadius: 15,
         paddingHorizontal: 20,
         paddingVertical: 15,
         marginBottom: 15,
         fontSize: 16,
+        borderWidth: 1,
+        borderColor: "#E1E8ED",
         shadowColor: "#000",
         shadowOffset: {
             width: 0,
@@ -184,11 +175,11 @@ const styles = StyleSheet.create({
         elevation: 2,
     },
     Pressable: {
-        backgroundColor: "deepskyblue",
+        backgroundColor: "#4A90E2",
         paddingVertical: 18,
-        borderRadius: 12,
+        borderRadius: 15,
         marginVertical: 30,
-        shadowColor: "#ff9500",
+        shadowColor: "#4A90E2",
         shadowOffset: {
             width: 0,
             height: 4,
@@ -209,11 +200,11 @@ const styles = StyleSheet.create({
         fontSize: 32,
         marginBottom: 30,
         fontFamily: "Rubik-Bold",
-        color: "#1a1a1a",
+        color: "#2C3E50",
     },
     label: {
         fontSize: 15,
-        color: "#4a4a4a",
+        color: "#34495E",
         marginBottom: 8,
         marginLeft: 5,
         fontWeight: "600",
@@ -225,7 +216,7 @@ const styles = StyleSheet.create({
         alignSelf: 'flex-start',
     },
     errorText: {
-        color: "#dc3545",
+        color: "#E74C3C",
         fontSize: 13,
         marginLeft: 5,
         marginTop: -10,

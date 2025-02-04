@@ -214,7 +214,7 @@ export default function ProductsSection({ type }) {
                     </Text>
                     <View className="mr-3">
                         <SmallButton onPress={() => navigation.navigate("Search")}>
-                            Voir plus
+                            See more
                         </SmallButton>
                     </View>
                 </View>

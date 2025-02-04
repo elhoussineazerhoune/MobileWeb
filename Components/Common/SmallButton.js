@@ -9,7 +9,7 @@ export default function SmallButton(props) {
       onPress={props.onPress}
       style={{ marginTop: 5 }}
     >
-      <Text className="text-[#4D2222] font-RubikR text-[15px]">{props.children || "Press me"}</Text>
+      <Text className="text-[#F8F8F8] font-RubikR text-[14px]">{props.children || "Press me"}</Text>
     </Pressable>
   );
 }

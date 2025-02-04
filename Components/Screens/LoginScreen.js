@@ -30,12 +30,12 @@ export default function LoginScreen({ navigation }) {
     return (
         <View style={styles.container}>
             <View style={styles.formContainer}>
-                <Text style={styles.title}>S'inscrire</Text>
+                <Text style={styles.title}>Sign In</Text>
 
                 <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Nom d'utilisateur</Text>
+                    <Text style={styles.label}>Username</Text>
                     <TextInput
-                        placeholder="Entrez votre nom d'utilisateur"
+                        placeholder="Enter your username"
                         style={styles.TextInput}
                         onChangeText={(username) => setUsername(username)}
                         placeholderTextColor="#9FA5C0"
@@ -43,9 +43,9 @@ export default function LoginScreen({ navigation }) {
                 </View>
 
                 <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Mot de passe</Text>
+                    <Text style={styles.label}>Password</Text>
                     <TextInput
-                        placeholder="Entrez votre mot de passe"
+                        placeholder="Enter your password"
                         secureTextEntry={true}
                         style={styles.TextInput}
                         onChangeText={(password) => setPassword(password)}
@@ -56,18 +56,18 @@ export default function LoginScreen({ navigation }) {
                 {message && <Text style={styles.errorMessage}>{message}</Text>}
 
                 <Pressable style={styles.loginButton} onPress={handleLogin}>
-                    <Text style={styles.loginButtonText}>Se connecter</Text>
+                    <Text style={styles.loginButtonText}>Login</Text>
                 </Pressable>
 
                 <Pressable onPress={() => {}}>
-                    <Text style={styles.forgotPassword}>Mot de passe oublié ?</Text>
+                    <Text style={styles.forgotPassword}>Forgot Password?</Text>
                 </Pressable>
 
                 <Pressable
                     style={styles.createAccountButton}
                     onPress={() => navigation.navigate("Sign Up")}
                 >
-                    <Text style={styles.createAccountText}>Créer un compte artisan</Text>
+                    <Text style={styles.createAccountText}>Create Artisan Account</Text>
                 </Pressable>
             </View>
         </View>
@@ -103,13 +103,13 @@ const styles = StyleSheet.create({
         fontWeight: '500',
     },
     TextInput: {
-        backgroundColor: '#F7F8F9',
+        backgroundColor: '#FFFFFF',
         borderRadius: 12,
         padding: 15,
         fontSize: 16,
         borderWidth: 1,
-        borderColor: '#E8E8E8',
-        shadowColor: '#000',
+        borderColor: '#FFD1D9',
+        shadowColor: '#FF385C',
         shadowOffset: {
             width: 0,
             height: 1,
@@ -119,11 +119,11 @@ const styles = StyleSheet.create({
         elevation: 2,
     },
     loginButton: {
-        backgroundColor: 'deepskyblue',
+        backgroundColor: '#FF385C',
         paddingVertical: 16,
         borderRadius: 12,
         marginTop: 20,
-        shadowColor: '#FF9500',
+        shadowColor: '#FF385C',
         shadowOffset: {
             width: 0,
             height: 4,
@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
     forgotPassword: {
-        color: '#FF4444',
+        color: '#FF385C',
         textAlign: 'center',
         marginTop: 16,
         fontSize: 15,
@@ -147,19 +147,19 @@ const styles = StyleSheet.create({
     },
     createAccountButton: {
         borderWidth: 2,
-        borderColor: '#1A1A1A',
+        borderColor: '#FF385C',
         borderRadius: 12,
         paddingVertical: 14,
         marginTop: 30,
     },
     createAccountText: {
-        color: '#1A1A1A',
+        color: '#FF385C',
         textAlign: 'center',
         fontSize: 16,
         fontWeight: '600',
     },
     errorMessage: {
-        color: '#FF4444',
+        color: '#FF385C',
         textAlign: 'center',
         marginTop: 10,
         fontSize: 14,
