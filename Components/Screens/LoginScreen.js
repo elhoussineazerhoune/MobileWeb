@@ -14,7 +14,6 @@ export default function LoginScreen({ navigation }) {
         axios
             .post("http://10.0.2.2:3306/api/client/login", { email, password })
             .then((res) => {
-                console.log("===" + JSON.stringify(res.data));
                 if (!res.data.success) {
                     // email or password incorrect
                     setError(res.data.message);

@@ -17,37 +17,10 @@ const createArticle = async (req, res) => {
       ...req.body,
       image: image_filename,
     };
-
-    const existingArticle = await Article.findOne({
-      where: { nom: articleData.nom },
-    });
-
-    if (existingArticle) {
-      const newStock =
-        Number(existingArticle.stock) + Number(articleData.stock);
-      const updatedArticle = await Article.update(
-        {
-          ...articleData,
-          stock: newStock,
-        },
-        { where: { id: existingArticle.id } }
-      );
-
-      if (updatedArticle[0] === 1) {
-        return res.status(200).json({
-          success: true,
-          message: "Le stock a été mis à jour",
-          article: existingArticle,
-        });
-      } else {
-        return res.status(500).json({
-          success: false,
-          message: "Le stock n'a pas pu être mis à jour",
-        });
-      }
-    }
+    console.log("articleData : ", articleData);
 
     const newArticle = await Article.create(articleData);
+    console.log("newArticle : created", newArticle);
     res.status(201).json({
       success: true,
       message: "Article a été créé avec succès",
@@ -59,6 +32,7 @@ const createArticle = async (req, res) => {
       message: "Erreur lors de la création de l'article",
       error: error.message,
     });
+    console.log(error);
   }
 };
 

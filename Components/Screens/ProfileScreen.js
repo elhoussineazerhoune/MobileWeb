@@ -157,7 +157,7 @@ export default function ProfileScreen({ navigation }) {
         return (
             <View style={styles.container}>
                 <StatusBar style="light" backgroundColor="#FF385C" />
-                <ScrollView 
+                <ScrollView
                     contentContainerStyle={styles.scrollContent}
                     showsVerticalScrollIndicator={false}
                 >
@@ -204,14 +204,18 @@ export default function ProfileScreen({ navigation }) {
                             <Ionicons name="settings-outline" size={20} color="#FF385C" />
                             <Text style={styles.actionText}>Settings</Text>
                         </TouchableOpacity>
+                        <TouchableOpacity style={styles.actionButton} onPress={() => navigation.navigate('CreateArticle')}>
+                            <Ionicons name="pencil-outline" size={20} color="#FF385C" />
+                            <Text style={styles.actionText}>Créer Article</Text>
+                        </TouchableOpacity>
                     </View>
 
                     {/* Recent Orders */}
                     <View style={styles.ordersContainer}>
                         <Text style={styles.sectionTitle}>Recent Orders</Text>
                         {orders.map((order) => (
-                            <TouchableOpacity 
-                                key={order.id} 
+                            <TouchableOpacity
+                                key={order.id}
                                 style={styles.orderCard}
                                 onPress={() => navigation.navigate('OrderDetails', { orderId: order.id })}
                             >
