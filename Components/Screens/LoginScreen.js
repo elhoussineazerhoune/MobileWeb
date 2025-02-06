@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { View, Text, TextInput, Pressable, StyleSheet } from "react-native";
 
 export default function LoginScreen({ navigation }) {
-    const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
@@ -12,16 +12,19 @@ export default function LoginScreen({ navigation }) {
     // Function to handle login request
     function handleLogin() {
         axios
-            .post("http://10.0.2.2:3306/api/client/login", { email:username, password })
+            .post("http://10.0.2.2:3306/api/client/login", { email, password })
             .then((res) => {
-                if (res.data.error) {
+                console.log("===" + JSON.stringify(res.data));
+                if (!res.data.success) {
                     // email or password incorrect
-                    setError(res.data.error);
-                    setMessage(res.data.error);
+                    setError(res.data.message);
+                    setMessage(res.data.message);
                 } else {
-                    // correct credentials
-                    console.log(res.data);
-                    AsyncStorage.setItem("token", res.data.token);
+                    if (res.data.admin) {
+                        AsyncStorage.setItem("AdminToken", res.data.token);
+                    } else {
+                        AsyncStorage.setItem("ClientToken", res.data.token);
+                    }
                     navigation.navigate("Home");
                 }
             })
@@ -37,7 +40,7 @@ export default function LoginScreen({ navigation }) {
                     <TextInput
                         placeholder="Entrez votre nom d'utilisateur"
                         style={styles.TextInput}
-                        onChangeText={(username) => setUsername(username)}
+                        onChangeText={(username) => setEmail(username)}
                         placeholderTextColor="#9FA5C0"
                     />
                 </View>
@@ -59,7 +62,7 @@ export default function LoginScreen({ navigation }) {
                     <Text style={styles.loginButtonText}>Se connecter</Text>
                 </Pressable>
 
-                <Pressable onPress={() => {}}>
+                <Pressable onPress={() => { }}>
                     <Text style={styles.forgotPassword}>Mot de passe oublié ?</Text>
                 </Pressable>
 
@@ -67,7 +70,7 @@ export default function LoginScreen({ navigation }) {
                     style={styles.createAccountButton}
                     onPress={() => navigation.navigate("Sign Up")}
                 >
-                    <Text style={styles.createAccountText}>Créer un compte artisan</Text>
+                    <Text style={styles.createAccountText}>Créer un compte</Text>
                 </Pressable>
             </View>
         </View>

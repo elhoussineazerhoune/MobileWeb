@@ -68,7 +68,7 @@ export default function ProfileScreen({ navigation }) {
     const [Posts, setPosts] = useState();
     const [orders, setOrders] = useState(mockOrders);
 
-    const [isAdmin, SetisAdmin] = useState(false);
+    const [isAdmin, SetisAdmin] = useState(true);
 
     async function handleProfile() {
         const id = await AsyncStorage.getItem("ClientToken");
