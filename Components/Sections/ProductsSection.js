@@ -56,6 +56,8 @@ export default function ProductsSection({ type }) {
     const [selectedSize, setSelectedSize] = useState(null);
     const [showSizeModal, setShowSizeModal] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
+    const [Data, SetData] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     // Add this new function to check cart items
     const loadCartQuantities = async () => {
@@ -74,9 +76,26 @@ export default function ProductsSection({ type }) {
         }
     };
 
+    const fetchProducts = async () => {
+        try {
+            setIsLoading(true);
+            const response = await axios.get("http://10.0.2.2:3306/api/article/findAll");
+            if (response.data.success) {
+                SetData(response.data.products);
+            } else {
+                console.log("Error fetching products");
+            }
+        } catch (error) {
+            console.error("Error fetching products:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     useEffect(() => {
         loadCartQuantities();
-    }, []);
+        fetchProducts();
+    }, []); // Remove Data dependency to avoid infinite loop
 
     const handleAddToCart = (product) => {
         setSelectedProduct(product);
@@ -98,12 +117,12 @@ export default function ProductsSection({ type }) {
             setLoadingStates(prev => ({ ...prev, [product.id]: true }));
             const savedCart = await AsyncStorage.getItem(CART_STORAGE_KEY);
             let cart = savedCart ? JSON.parse(savedCart) : [];
-            
+
             const productWithSize = { ...product, size };
-            const existingProduct = cart.find(item => 
+            const existingProduct = cart.find(item =>
                 item.id === product.id && item.size === size
             );
-            
+
             if (existingProduct) {
                 existingProduct.quantity = Math.max(0, existingProduct.quantity + change);
                 if (existingProduct.quantity === 0) {
@@ -153,13 +172,13 @@ export default function ProductsSection({ type }) {
                         ))}
                     </View>
                     <View style={styles.modalActions}>
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={styles.cancelButton}
                             onPress={() => setShowSizeModal(false)}
                         >
                             <Text style={styles.cancelButtonText}>Cancel</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={[
                                 styles.confirmButton,
                                 !selectedSize && styles.disabledButton
@@ -176,12 +195,16 @@ export default function ProductsSection({ type }) {
     );
 
     const renderItem = ({ item }) => (
-        <Pressable 
+        <Pressable
             style={styles.card}
             onPress={() => navigation.navigate("ProductDetails", { product: item })}
         >
             <View style={styles.imageContainer}>
-                <Image source={item.imageUri} style={styles.image} resizeMode="cover" />
+                <Image
+                    source={{ uri: `http://10.0.2.2:3306/images/${item.image}` }}
+                    style={styles.image}
+                    resizeMode="cover"
+                />
                 <View style={styles.ratingBadge}>
                     <Ionicons name="star" size={12} color="gold" />
                     <Text style={styles.ratingText}>{item.rating}</Text>
@@ -190,11 +213,11 @@ export default function ProductsSection({ type }) {
 
             <View style={styles.contentContainer}>
                 <View style={styles.productInfo}>
-                    <Text numberOfLines={1} style={styles.name}>{item.name}</Text>
-                    <Text style={styles.price}>{item.price}</Text>
+                    <Text numberOfLines={1} style={styles.name}>{item.nom}</Text>
+                    <Text style={styles.price}>{item.puv}</Text>
                 </View>
 
-                <TouchableOpacity 
+                <TouchableOpacity
                     style={styles.viewDetailsButton}
                     onPress={() => navigation.navigate("ProductDetails", { product: item })}
                 >
@@ -218,14 +241,20 @@ export default function ProductsSection({ type }) {
                         </SmallButton>
                     </View>
                 </View>
-                <FlatList
-                    data={data}
-                    renderItem={renderItem}
-                    keyExtractor={(item) => item.id}
-                    horizontal={true}
-                    contentContainerStyle={styles.listContainer}
-                    showsHorizontalScrollIndicator={false}
-                />
+                {isLoading ? (
+                    <View style={styles.loaderContainer}>
+                        <ActivityIndicator size="large" color="#FF385C" />
+                    </View>
+                ) : (
+                    <FlatList
+                        data={Data}
+                        renderItem={renderItem}
+                        keyExtractor={(item) => item.id}
+                        horizontal={true}
+                        contentContainerStyle={styles.listContainer}
+                        showsHorizontalScrollIndicator={false}
+                    />
+                )}
             </Animated.View>
             <SizeSelectionModal />
         </>
@@ -458,6 +487,11 @@ const styles = StyleSheet.create({
     productInfo: {
         alignItems: 'center',
         marginBottom: 8,
+    },
+    loaderContainer: {
+        height: 250,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 });
 

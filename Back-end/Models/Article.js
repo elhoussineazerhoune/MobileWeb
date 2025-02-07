@@ -1,5 +1,5 @@
 const { DataTypes, Model } = require('sequelize');
-const {sequelize} = require('../Config/db.js');
+const { sequelize } = require('../Config/db.js');
 
 const Article = sequelize.define('Article', {
     id: {
@@ -34,13 +34,8 @@ const Article = sequelize.define('Article', {
         allowNull: true
     },
     categorie_id: {
-       type: DataTypes.INTEGER,
-       refereces:{
-        model: 'Categorie',
-        key: 'id'
-       },
-       onDelete: 'CASCADE',  // Optionnel : définir ce qui se passe quand la catégorie est supprimée
-       onUpdate: 'CASCADE',
+        type: DataTypes.INTEGER,
+        allowNull: false
     },
     NbCommande: {
         type: DataTypes.INTEGER,
@@ -53,10 +48,14 @@ const Article = sequelize.define('Article', {
     art_globalcode: {
         type: DataTypes.STRING,
         defaultValue: null,
+    },
+    size: {
+        type: DataTypes.STRING,
+        allowNull: true
     }
 }, {
     tableName: 'articles',
     timestamps: true
 });
 
-module.exports = {Article} ;
+module.exports = { Article };
