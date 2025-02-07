@@ -48,7 +48,7 @@ const data = [
 
 const CART_STORAGE_KEY = '@shopping_cart';
 
-export default function ProductsSection({ type }) {
+export default function ProductsSection({ type, categoryId }) {
     const navigation = useNavigation();
     const [loadingStates, setLoadingStates] = useState({});
     const [cartQuantities, setCartQuantities] = useState({});
@@ -79,14 +79,19 @@ export default function ProductsSection({ type }) {
     const fetchProducts = async () => {
         try {
             setIsLoading(true);
-            const response = await axios.get("http://10.0.2.2:3306/api/article/findAll");
+            let response;
+            if (type === "Suggestions") {
+                response = await axios.get('http://10.0.2.2:3306/api/article/findRandom');
+            } else if (categoryId) {
+                response = await axios.get(`http://10.0.2.2:3306/api/article/category/${categoryId}`);
+            }
+            console.log(response.data);
+            
             if (response.data.success) {
-                SetData(response.data.products);
-            } else {
-                console.log("Error fetching products");
+                SetData(response.data.data || response.data.filteredProducts);
             }
         } catch (error) {
-            console.error("Error fetching products:", error);
+            console.error('Error fetching products:', error);
         } finally {
             setIsLoading(false);
         }
@@ -95,7 +100,7 @@ export default function ProductsSection({ type }) {
     useEffect(() => {
         loadCartQuantities();
         fetchProducts();
-    }, []); // Remove Data dependency to avoid infinite loop
+    }, [type, categoryId]); // Remove Data dependency to avoid infinite loop
 
     const handleAddToCart = (product) => {
         setSelectedProduct(product);
@@ -194,6 +199,11 @@ export default function ProductsSection({ type }) {
         </Modal>
     );
 
+    const getRandomRating = () => {
+        // Generate random number between 1 and 5 with 0.1 step
+        return (Math.floor(Math.random() * 41) / 10 + 1).toFixed(1);
+    };
+
     const renderItem = ({ item }) => (
         <Pressable
             style={styles.card}
@@ -201,20 +211,24 @@ export default function ProductsSection({ type }) {
         >
             <View style={styles.imageContainer}>
                 <Image
-                    source={{ uri: `http://10.0.2.2:3306/images/${item.image}` }}
+                    source={
+                        item.imageUri ? 
+                        item.imageUri : // For static images
+                        { uri: `http://10.0.2.2:3306/images/${item.image}` } // For dynamic images
+                    }
                     style={styles.image}
                     resizeMode="cover"
                 />
                 <View style={styles.ratingBadge}>
                     <Ionicons name="star" size={12} color="gold" />
-                    <Text style={styles.ratingText}>{item.rating}</Text>
+                    <Text style={styles.ratingText}>{getRandomRating()}</Text>
                 </View>
             </View>
 
             <View style={styles.contentContainer}>
                 <View style={styles.productInfo}>
-                    <Text numberOfLines={1} style={styles.name}>{item.nom}</Text>
-                    <Text style={styles.price}>{item.puv}</Text>
+                    <Text numberOfLines={1} style={styles.name}>{item.nom || item.name}</Text>
+                    <Text style={styles.price}>{item.puv || item.price} {item.puv ? 'MAD' : ''}</Text>
                 </View>
 
                 <TouchableOpacity

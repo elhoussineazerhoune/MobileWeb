@@ -4,8 +4,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import * as ImagePicker from 'expo-image-picker'; // Changed this import
 import axios from 'axios';
+import { Platform } from 'react-native';
 
-const CATEGORIES = ['Men', 'Women', 'Kids'];
+const CATEGORIES = [
+    { id: 1, name: 'Men' },
+    { id: 2, name: 'Women' },
+    { id: 3, name: 'Kids' }
+];
 const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
 export default function AddProduct({ navigation }) {
@@ -66,28 +71,36 @@ export default function AddProduct({ navigation }) {
                 return;
             }
 
+            if (!productData.image) {
+                Alert.alert('Error', 'Please select an image');
+                return;
+            }
+
             const formData = new FormData();
-            formData.append('name', productData.name);
-            formData.append('price', productData.price);
-            formData.append('category', productData.category);
-            formData.append('description', productData.description);
+            formData.append('nom', productData.name);
+            formData.append('puv', productData.price);
             formData.append('stock', productData.stock);
-            formData.append('sizes', JSON.stringify(productData.sizes));
-            
+            formData.append('categorie_id', productData.category);
+            formData.append('description', productData.description || '');
+            formData.append('size', productData.sizes.join(','));
+
             if (productData.image) {
-                const imageUri = productData.image.uri;
-                const filename = imageUri.split('/').pop();
+                const imageUri = Platform.OS === 'ios' ? 
+                    productData.image.uri.replace('file://', '') : 
+                    productData.image.uri;
+                const filename = productData.image.uri.split('/').pop();
                 const match = /\.(\w+)$/.exec(filename);
-                const type = match ? `image/${match[1]}` : 'image/jpeg';
+                const type = match ? `image/${match[1]}` : 'image';
 
                 formData.append('image', {
                     uri: imageUri,
                     name: filename,
-                    type
+                    type: type
                 });
             }
 
-            const response = await axios.post('http://10.0.2.2:3306/api/admin/products', 
+            const response = await axios.post(
+                'http://10.0.2.2:3306/api/article/add',
                 formData,
                 {
                     headers: {
@@ -96,11 +109,23 @@ export default function AddProduct({ navigation }) {
                 }
             );
 
-            Alert.alert('Success', 'Product added successfully');
-            navigation.goBack();
+            if (response.data.success) {
+                Alert.alert('Success', response.data.message);
+                // Reset form
+                setProductData({
+                    name: '',
+                    price: '',
+                    category: '',
+                    description: '',
+                    stock: '',
+                    sizes: [],
+                    image: null
+                });
+            }
         } catch (error) {
             console.error('Error adding product:', error);
-            Alert.alert('Error', 'Failed to add product');
+            const errorMessage = error.response?.data?.message || 'Failed to add product';
+            Alert.alert('Error', errorMessage);
         }
     };
 
@@ -141,17 +166,17 @@ export default function AddProduct({ navigation }) {
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryContainer}>
                         {CATEGORIES.map((category) => (
                             <Pressable
-                                key={category}
+                                key={category.id}
                                 style={[
                                     styles.categoryChip,
-                                    productData.category === category && styles.categoryChipSelected
+                                    productData.category === category.id && styles.categoryChipSelected
                                 ]}
-                                onPress={() => setProductData({...productData, category})}
+                                onPress={() => setProductData({...productData, category: category.id})}
                             >
                                 <Text style={[
                                     styles.categoryText,
-                                    productData.category === category && styles.categoryTextSelected
-                                ]}>{category}</Text>
+                                    productData.category === category.id && styles.categoryTextSelected
+                                ]}>{category.name}</Text>
                             </Pressable>
                         ))}
                     </ScrollView>

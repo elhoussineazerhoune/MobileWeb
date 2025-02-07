@@ -15,7 +15,9 @@ export default function OrderManager({ navigation }) {
     const fetchOrders = async () => {
         try {
             const response = await axios.get('http://10.0.2.2:3306/api/commande/');
-            setOrders(response.data);
+            setOrders(response.data.data);
+            // console.log(response.data.data);
+
             setLoading(false);
         } catch (error) {
             console.error('Error fetching orders:', error);
@@ -23,13 +25,30 @@ export default function OrderManager({ navigation }) {
         }
     };
 
-    const handleUpdateStatus = async (orderId, newStatus) => {
+    // Status translation map
+    const statusMap = {
+        'En attente': 'Pending',
+        'validé': 'Validated',
+        'annulé': 'Cancelled',
+        'en cours': 'Processing',
+        'terminé': 'Completed'
+    };
+
+    const handleUpdateStatus = async (id, newStatus) => {
         try {
-            await axios.post('http://10.0.2.2:3306/api/admin/updateorder', {
-                orderId,
-                status: newStatus
+            const response = await axios.post('http://10.0.2.2:3306/api/commande/updatecommand', {
+                id,
+                newStatus
             });
-            fetchOrders(); // Refresh list
+            console.log(response.data);
+            
+            
+            if (response.data.success) {
+                Alert.alert('Success', response.data.message);
+                fetchOrders(); // Refresh list
+            } else {
+                Alert.alert('Error', 'Failed to update order status');
+            }
         } catch (error) {
             console.error('Error updating order:', error);
             Alert.alert('Error', 'Failed to update order status');
@@ -39,22 +58,49 @@ export default function OrderManager({ navigation }) {
     const renderStatusButton = (status, orderId) => (
         <View style={styles.statusButtons}>
             <Pressable
-                style={[styles.statusButton, status === 'pending' && styles.activeStatus]}
-                onPress={() => handleUpdateStatus(orderId, 'pending')}
+                style={[styles.statusButton, status === 'En attente' && styles.activeStatus]}
+                onPress={() => handleUpdateStatus(orderId, 'En attente')}
             >
-                <Text style={styles.statusButtonText}>Pending</Text>
+                <Text style={[
+                    styles.statusButtonText,
+                    status === 'En attente' && { color: '#FFF' }
+                ]}>Pending</Text>
             </Pressable>
             <Pressable
-                style={[styles.statusButton, status === 'processing' && styles.activeStatus]}
-                onPress={() => handleUpdateStatus(orderId, 'processing')}
+                style={[styles.statusButton, status === 'en cours' && styles.activeStatus]}
+                onPress={() => handleUpdateStatus(orderId, 'en cours')}
             >
-                <Text style={styles.statusButtonText}>Processing</Text>
+                <Text style={[
+                    styles.statusButtonText,
+                    status === 'en cours' && { color: '#FFF' }
+                ]}>Processing</Text>
             </Pressable>
             <Pressable
-                style={[styles.statusButton, status === 'completed' && styles.activeStatus]}
-                onPress={() => handleUpdateStatus(orderId, 'completed')}
+                style={[styles.statusButton, status === 'validé' && styles.activeStatus]}
+                onPress={() => handleUpdateStatus(orderId, 'validé')}
             >
-                <Text style={styles.statusButtonText}>Completed</Text>
+                <Text style={[
+                    styles.statusButtonText,
+                    status === 'validé' && { color: '#FFF' }
+                ]}>Validated</Text>
+            </Pressable>
+            <Pressable
+                style={[styles.statusButton, status === 'terminé' && styles.activeStatus]}
+                onPress={() => handleUpdateStatus(orderId, 'terminé')}
+            >
+                <Text style={[
+                    styles.statusButtonText,
+                    status === 'terminé' && { color: '#FFF' }
+                ]}>Completed</Text>
+            </Pressable>
+            <Pressable
+                style={[styles.statusButton, status === 'annulé' && styles.activeStatus]}
+                onPress={() => handleUpdateStatus(orderId, 'annulé')}
+            >
+                <Text style={[
+                    styles.statusButtonText,
+                    status === 'annulé' && { color: '#FFF' }
+                ]}>Cancelled</Text>
             </Pressable>
         </View>
     );
@@ -67,17 +113,26 @@ export default function OrderManager({ navigation }) {
             </View>
             <View style={styles.orderDetails}>
                 <Text style={styles.customerName}>{item.customerName}</Text>
-                <Text style={styles.orderTotal}>${item.total.toFixed(2)}</Text>
+                <Text style={styles.orderTotal}>{item.prixTotal.toFixed(2)} MAD</Text>
+            </View>
+            <View style={styles.orderStatus}>
+                <Text style={styles.statusLabel}>Status:</Text>
+                <Text style={[styles.statusValue, getStatusStyle(item.status)]}>
+                    {statusMap[item.status] || item.status}
+                </Text>
             </View>
             {renderStatusButton(item.status, item.id)}
-            <Pressable 
+            <Pressable
                 style={styles.viewButton}
-                onPress={() => navigation.navigate('OrderDetails', { orderId: item.id })}
+                onPress={() => navigation.navigate('OrderDetails', {
+                    orderId: item.id,
+                    userId: item.clientId // Add this when navigating
+                })}
             >
-                <Text style={styles.viewButtonText}>View Details</Text>
-                <Ionicons name="arrow-forward" size={16} color="#FF385C" />
-            </Pressable>
-        </View>
+            <Text style={styles.viewButtonText}>View Details</Text>
+            <Ionicons name="arrow-forward" size={16} color="#FF385C" />
+        </Pressable>
+        </View >
     );
 
     if (loading) {
@@ -91,7 +146,7 @@ export default function OrderManager({ navigation }) {
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
-                <Pressable 
+                <Pressable
                     style={styles.backButton}
                     onPress={() => navigation.goBack()}
                 >
@@ -219,4 +274,36 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
+    orderStatus: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    statusLabel: {
+        fontSize: 14,
+        fontFamily: 'Poppins-Regular',
+        color: '#666',
+        marginRight: 8,
+    },
+    statusValue: {
+        fontSize: 14,
+        fontFamily: 'Poppins-Medium',
+    }
 });
+
+const getStatusStyle = (status) => {
+    switch(status) {
+        case 'validé':
+            return { color: '#2D6A4F' };
+        case 'terminé':
+            return { color: '#059669' };
+        case 'En attente':
+            return { color: '#B45309' };
+        case 'en cours':
+            return { color: '#2563EB' };
+        case 'annulé':
+            return { color: '#DC2626' };
+        default:
+            return { color: '#374151' };
+    }
+};

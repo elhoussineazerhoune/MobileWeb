@@ -1,24 +1,42 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Image, ScrollView, Pressable, Dimensions, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Image, ScrollView, Pressable, Dimensions, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from "react-native-vector-icons/Ionicons";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCart } from '../../context/CartContext';
+import axios from 'axios';
 
 const { width } = Dimensions.get('window');
 const CART_STORAGE_KEY = '@shopping_cart';
 
 export default function ProductDetailsScreen({ route, navigation }) {
     const { product } = route.params;
-    const [quantity, setQuantity] = useState(0);
-    const [loading, setLoading] = useState(false);
+    const [productDetails, setProductDetails] = useState(null);
+    const [loading, setLoading] = useState(true);
     const { updateCartCount } = useCart();
     const [sizeQuantities, setSizeQuantities] = useState({});
     const [selectedSize, setSelectedSize] = useState(null);
 
     useEffect(() => {
+        fetchProductDetails();
         loadSizeQuantities();
     }, []);
+
+    const fetchProductDetails = async () => {
+        try {
+            const response = await axios.get(`http://10.0.2.2:3306/api/article/${product.id}`);
+            if (response.data.success) {
+                setProductDetails(response.data.product);
+                console.log(productDetails);
+                
+            }
+        } catch (error) {
+            console.error('Error fetching product details:', error);
+            Alert.alert('Error', 'Failed to load product details');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const loadSizeQuantities = async () => {
         try {
@@ -90,70 +108,79 @@ export default function ProductDetailsScreen({ route, navigation }) {
                 </Pressable>
             </View>
 
-            <ScrollView showsVerticalScrollIndicator={false}>
-                {/* Product Image */}
-                <Image source={product.imageUri} style={styles.image} />
+            {loading ? (
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color="#FF385C" />
+                </View>
+            ) : (
+                <ScrollView showsVerticalScrollIndicator={false}>
+                    {/* Product Image */}
+                    <Image 
+                        source={{ uri: `http://10.0.2.2:3306/images/${product?.image}` }} 
+                        style={styles.image} 
+                    />
 
-                {/* Product Info */}
-                <View style={styles.infoContainer}>
-                    <Text style={styles.name}>{product.name}</Text>
-                    <Text style={styles.price}>{product.price}</Text>
+                    {/* Product Info */}
+                    <View style={styles.infoContainer}>
+                        <Text style={styles.name}>{product?.nom}</Text>
+                        <Text style={styles.price}>{product?.puv} MAD</Text>
 
-                    <View style={styles.ratingContainer}>
-                        <Ionicons name="star" size={20} color="gold" />
-                        <Text style={styles.rating}>{product.rating}</Text>
-                        <Text style={styles.reviews}>(124 reviews)</Text>
-                    </View>
+                        <View style={styles.ratingContainer}>
+                            <Ionicons name="star" size={20} color="gold" />
+                            <Text style={styles.rating}>
+                                {(Math.floor(Math.random() * 41) / 10 + 1).toFixed(1)}
+                            </Text>
+                            <Text style={styles.reviews}>(124 reviews)</Text>
+                        </View>
 
-                    <Text style={styles.description}>
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor 
-                        incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis 
-                        nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                    </Text>
+                        <Text style={styles.description}>
+                            {product?.description || 'No description available'}
+                        </Text>
 
-                    {/* Size Selection */}
-                    <View style={styles.sizesSection}>
-                        <Text style={styles.sectionTitle}>Select Size & Quantity</Text>
-                        <View style={styles.sizeGrid}>
-                            {['S', 'M', 'L', 'XL', 'XXL'].map((size) => (
-                                <View key={size} style={styles.sizeContainer}>
-                                    <Pressable 
-                                        style={[
-                                            styles.sizeButton,
-                                            selectedSize === size && styles.selectedSizeButton
-                                        ]}
-                                        onPress={() => setSelectedSize(size)}
-                                    >
-                                        <Text style={[
-                                            styles.sizeText,
-                                            selectedSize === size && styles.selectedSizeText
-                                        ]}>
-                                            {size}
-                                        </Text>
-                                    </Pressable>
-                                    {sizeQuantities[size] > 0 && (
-                                        <View style={styles.quantityControl}>
-                                            <TouchableOpacity 
-                                                style={styles.quantityButton}
-                                                onPress={() => updateQuantity(size, -1)}
-                                            >
-                                                <Ionicons name="remove" size={20} color="#FF385C" />
-                                            </TouchableOpacity>
-                                            <Text style={styles.quantityText}>{sizeQuantities[size]}</Text>
-                                            <TouchableOpacity 
-                                                style={styles.quantityButton}
-                                                onPress={() => updateQuantity(size, 1)}
-                                            >
-                                                <Ionicons name="add" size={20} color="#FF385C" />
-                                            </TouchableOpacity>
-                                        </View>
-                                    )}
-                                </View>
-                            ))}
+                        {/* Size Selection */}
+                        <View style={styles.sizesSection}>
+                            <Text style={styles.sectionTitle}>Select Size & Quantity</Text>
+                            <View style={styles.sizeGrid}>
+                                {(product?.size || '').split(',').map((size) => (
+                                    <View key={size} style={styles.sizeContainer}>
+                                        <Pressable 
+                                            style={[
+                                                styles.sizeButton,
+                                                selectedSize === size && styles.selectedSizeButton
+                                            ]}
+                                            onPress={() => setSelectedSize(size)}
+                                        >
+                                            <Text style={[
+                                                styles.sizeText,
+                                                selectedSize === size && styles.selectedSizeText
+                                            ]}>
+                                                {size}
+                                            </Text>
+                                        </Pressable>
+                                        {sizeQuantities[size] > 0 && (
+                                            <View style={styles.quantityControl}>
+                                                <TouchableOpacity 
+                                                    style={styles.quantityButton}
+                                                    onPress={() => updateQuantity(size, -1)}
+                                                >
+                                                    <Ionicons name="remove" size={20} color="#FF385C" />
+                                                </TouchableOpacity>
+                                                <Text style={styles.quantityText}>{sizeQuantities[size]}</Text>
+                                                <TouchableOpacity 
+                                                    style={styles.quantityButton}
+                                                    onPress={() => updateQuantity(size, 1)}
+                                                >
+                                                    <Ionicons name="add" size={20} color="#FF385C" />
+                                                </TouchableOpacity>
+                                            </View>
+                                        )}
+                                    </View>
+                                ))}
+                            </View>
                         </View>
                     </View>
-                </View>
-            </ScrollView>
+                </ScrollView>
+            )}
 
             {/* Add to Cart Button */}
             <View style={styles.footer}>
@@ -342,5 +369,10 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 16,
         fontWeight: '600',
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 });

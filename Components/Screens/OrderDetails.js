@@ -1,86 +1,140 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, SafeAreaView, Image, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, SafeAreaView, Image, StatusBar, ActivityIndicator, Alert } from 'react-native';
 import Ionicons from "react-native-vector-icons/Ionicons";
 import Animated, { FadeInDown } from 'react-native-reanimated';
-
-// Update mockup data with more details
-const mockOrderDetails = {
-    1: {
-        id: 1,
-        status: 'completed',
-        date: '2024-01-15',
-        total: 150.99,
-        customer: {
-            name: 'John Doe',
-            email: 'john@example.com',
-            phone: '+33 6 12 34 56 78',
-            address: '123 Rue Principal, Paris',
-        },
-        products: [
-            { 
-                id: 1, 
-                name: 'Product 1', 
-                quantity: 2, 
-                price: 75.50,
-                type: 'Electronics',
-                image: require('../../assets/products/p1.jpeg'),
-                inStock: 15,
-                description: 'High quality product with premium features'
-            },
-            { 
-                id: 2, 
-                name: 'Product 2', 
-                quantity: 1, 
-                price: 25.99,
-                type: 'Accessories',
-                image: require('../../assets/products/p2.jpeg'),
-                inStock: 8,
-                description: 'Premium accessory for daily use'
-            }
-        ]
-    },
-    2: {
-        id: 2,
-        status: 'pending',
-        date: '2024-01-20',
-        total: 89.99,
-        products: [
-            { id: 3, name: 'Product 3', quantity: 1, price: 89.99 }
-        ]
-    },
-    3: {
-        id: 3,
-        status: 'cancelled',
-        date: '2024-01-22',
-        total: 199.99,
-        products: [
-            { id: 4, name: 'Product 4', quantity: 2, price: 99.99 },
-            { id: 5, name: 'Product 5', quantity: 1, price: 45.99 }
-        ]
-    }
-};
+import axios from 'axios';
 
 function OrderDetails({ route, navigation }) {
-    const { orderId } = route.params;
+    const { orderId, userId } = route.params;
     const [orderDetails, setOrderDetails] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Simulate API call with mockup data
-        setOrderDetails(mockOrderDetails[orderId]);
-    }, [orderId]);
+        fetchOrderDetails();
+    }, [orderId, userId]);
 
-    const getStatusColor = (status) => {
-        switch(status) {
-            case 'completed': return { bg: '#E7F3EF', text: '#2D6A4F' };
-            case 'pending': return { bg: '#FEF3C7', text: '#B45309' };
-            case 'cancelled': return { bg: '#FEE2E2', text: '#DC2626' };
-            default: return { bg: '#E5E7EB', text: '#374151' };
+    const fetchOrderDetails = async () => {
+        try {
+            // First fetch all orders for the user
+            const response = await axios.get(`http://10.0.2.2:3306/api/commande/orders/${userId}`);
+            console.log(response.data.data[3].details[0].article);
+            
+            if (response.data.success) {
+                // Filter the specific order by ID
+                const specificOrder = response.data.data.find(order => order.id === orderId);
+                
+                if (specificOrder) {
+                    setOrderDetails({
+                        ...specificOrder,
+                        customer: {
+                            name: `${specificOrder.client.nom} ${specificOrder.client.prenom}`,
+                            email: specificOrder.client.email,
+                            phone: specificOrder.client.contact,
+                            address: specificOrder.client.adresse,
+                        },
+                        products: specificOrder.details.map(detail => ({
+                            id: detail.article.id,
+                            name: detail.article.nom,
+                            quantity: detail.quantite,
+                            price: detail.article.puv,
+                            type: `Category ${detail.article.categoryId}`,
+                            image: detail.article.image,
+                            description: detail.article.description,
+                            totalLigne: detail.totalLigne
+                        })),
+                        total: specificOrder.prixTotal,
+                        date: specificOrder.createdAt,
+                        status: specificOrder.status || 'pending'
+                    });
+                } else {
+                    Alert.alert('Error', 'Order not found');
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching order details:', error);
+            Alert.alert('Error', 'Failed to load order details');
+        } finally {
+            setLoading(false);
         }
     };
+
+    const getStatusColor = (status) => {
+        switch(status?.toLowerCase()) {
+            case 'validé':
+                return { bg: '#E7F3EF', text: '#2D6A4F' };
+            case 'terminé': 
+                return { bg: '#ECFDF5', text: '#059669' };
+            case 'en attente': 
+                return { bg: '#FEF3C7', text: '#B45309' };
+            case 'en cours': 
+                return { bg: '#DBEAFE', text: '#2563EB' };
+            case 'annulé': 
+                return { bg: '#FEE2E2', text: '#DC2626' };
+            default: 
+                return { bg: '#E5E7EB', text: '#374151' };
+        }
+    };
+
+    const getStatusText = (status) => {
+        const statusMap = {
+            'En attente': 'PENDING',
+            'validé': 'VALIDATED',
+            'annulé': 'CANCELLED',
+            'en cours': 'PROCESSING',
+            'terminé': 'COMPLETED'
+        };
+        return statusMap[status] || status?.toUpperCase();
+    };
+
+    const renderProductCard = (product) => (
+        <Animated.View 
+            key={product.id}
+            entering={FadeInDown.duration(400)}
+            style={styles.productCard}
+        >
+            <Image 
+                source={{ uri: `http://10.0.2.2:3306/images/${product.image}` }}
+                style={styles.productImage} 
+            />
+            <View style={styles.productInfo}>
+                <Text style={styles.productName}>{product.name}</Text>
+                {/* <Text style={styles.productType}>{product.type}</Text> */}
+                <View style={styles.productMeta}>
+                    <Text style={styles.productPrice}>{product.price} MAD</Text>
+                    <Text style={styles.productQuantity}>×{product.quantity}</Text>
+                </View>
+            </View>
+        </Animated.View>
+    );
+
+    if (loading) {
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#FF385C" />
+            </View>
+        );
+    }
 
     if (!orderDetails) {
         return <Text>Loading...</Text>;
     }
+
+    const renderPriceSummary = () => (
+        <View style={styles.priceSummary}>
+            <View style={styles.priceRow}>
+                <Text style={styles.priceLabel}>Products Total</Text>
+                <Text style={styles.priceValue}>
+                    {orderDetails.total} MAD
+                </Text>
+            </View>
+            <View style={styles.totalRow}>
+                <Text style={styles.totalLabel}>Total</Text>
+                <Text style={styles.totalValue}>
+                    {orderDetails.total} MAD
+                </Text>
+            </View>
+        </View>
+    );
 
     return (
         <SafeAreaView style={styles.safeArea}>
@@ -115,7 +169,7 @@ function OrderDetails({ route, navigation }) {
                             color={getStatusColor(orderDetails.status).text}
                         />
                         <Text style={[styles.statusText, { color: getStatusColor(orderDetails.status).text }]}>
-                            {orderDetails.status.toUpperCase()}
+                            {getStatusText(orderDetails.status)}
                         </Text>
                     </View>
 
@@ -155,46 +209,10 @@ function OrderDetails({ route, navigation }) {
                     {/* Products Section */}
                     <View style={styles.section}>
                         <Text style={styles.sectionTitle}>Products</Text>
-                        {orderDetails.products.map(product => (
-                            <Animated.View 
-                                key={product.id}
-                                entering={FadeInDown.duration(400)}
-                                style={styles.productCard}
-                            >
-                                <Image source={product.image} style={styles.productImage} />
-                                <View style={styles.productInfo}>
-                                    <Text style={styles.productName}>{product.name}</Text>
-                                    <Text style={styles.productType}>{product.type}</Text>
-                                    <View style={styles.productMeta}>
-                                        <Text style={styles.productPrice}>${product.price}</Text>
-                                        <Text style={styles.productQuantity}>×{product.quantity}</Text>
-                                    </View>
-                                </View>
-                            </Animated.View>
-                        ))}
+                        {orderDetails.products.map(product => renderProductCard(product))}
                     </View>
 
-                    {/* Price Summary */}
-                    <View style={styles.priceSummary}>
-                        <View style={styles.priceRow}>
-                            <Text style={styles.priceLabel}>Subtotal</Text>
-                            <Text style={styles.priceValue}>
-                                ${(orderDetails.total * 0.8).toFixed(2)}
-                            </Text>
-                        </View>
-                        <View style={styles.priceRow}>
-                            <Text style={styles.priceLabel}>Tax (20%)</Text>
-                            <Text style={styles.priceValue}>
-                                ${(orderDetails.total * 0.2).toFixed(2)}
-                            </Text>
-                        </View>
-                        <View style={styles.totalRow}>
-                            <Text style={styles.totalLabel}>Total</Text>
-                            <Text style={styles.totalValue}>
-                                ${orderDetails.total.toFixed(2)}
-                            </Text>
-                        </View>
-                    </View>
+                    {renderPriceSummary()}
                 </Animated.View>
             </ScrollView>
         </SafeAreaView>
@@ -319,6 +337,11 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontFamily: 'Poppins-Bold',
         color: '#FF385C',
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
     }
 });
 

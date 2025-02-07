@@ -10,15 +10,19 @@ const CART_STORAGE_KEY = '@shopping_cart';
 
 const CartItem = ({ item, onUpdateQuantity }) => (
     <View style={styles.cartItem}>
-        <Image source={item.imageUri} style={styles.itemImage} resizeMode="cover" />
+        <Image 
+            source={{ uri: `http://10.0.2.2:3306/images/${item.image}` }}
+            style={styles.itemImage} 
+            resizeMode="cover" 
+        />
         <View style={styles.itemInfo}>
             <View style={styles.itemHeader}>
-                <Text style={styles.itemTitle}>{item.name}</Text>
+                <Text style={styles.itemTitle}>{item.nom}</Text>
                 <View style={styles.sizeTag}>
                     <Text style={styles.sizeText}>Size: {item.size}</Text>
                 </View>
             </View>
-            <Text style={styles.itemPrice}>{item.price}</Text>
+            <Text style={styles.itemPrice}>{item.puv} MAD</Text>
             <View style={styles.quantityControl}>
                 <Pressable onPress={() => onUpdateQuantity(item.id, item.size, -1)}>
                     <Ionicons name="remove-circle-outline" size={24} color="#333" />
@@ -106,8 +110,7 @@ export default function CartScreen({ navigation }) {
     }, {});
 
     const total = cartItems.reduce((sum, item) => {
-        const price = parseFloat(item.price.replace('$', ''));
-        return sum + (price * item.quantity);
+        return sum + (parseFloat(item.puv) * item.quantity);
     }, 0);
 
     const handleCheckout = async () => {
@@ -133,7 +136,7 @@ export default function CartScreen({ navigation }) {
                                     total: total,
                                     items: cartItems.map(item => ({
                                         ...item,
-                                        price: parseFloat(item.price.replace('$', ''))
+                                        price: parseFloat(item.puv)
                                     }))
                                 }
                             }
@@ -153,7 +156,7 @@ export default function CartScreen({ navigation }) {
             total: total,
             items: cartItems.map(item => ({
                 ...item,
-                price: parseFloat(item.price.replace('$', ''))
+                price: parseFloat(item.puv)
             }))
         });
     };
@@ -190,7 +193,7 @@ export default function CartScreen({ navigation }) {
                 <View style={styles.footer}>
                     <View style={styles.totalSection}>
                         <Text style={styles.totalLabel}>Total:</Text>
-                        <Text style={styles.totalAmount}>${total.toFixed(2)}</Text>
+                        <Text style={styles.totalAmount}>{total.toFixed(2)} MAD</Text>
                     </View>
                     <Pressable 
                         style={styles.checkoutButton}

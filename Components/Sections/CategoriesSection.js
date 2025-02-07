@@ -44,7 +44,7 @@ const categories = [
   {
     id: 3,
     titre: "Minimalist",
-    imageUri: c4,
+    imageUri: c1,
     number: 6
   },
   {

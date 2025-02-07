@@ -1,470 +1,407 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, Pressable, TextInput } from 'react-native';
-import Ionicons from "react-native-vector-icons/Ionicons";
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert, ActivityIndicator, SafeAreaView, StatusBar, Pressable, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import Ionicons from "react-native-vector-icons/Ionicons";
+
+const CART_STORAGE_KEY = '@shopping_cart';
+
+const PAYMENT_METHODS = [
+    { id: 'card', label: 'Credit/Debit Card', icon: 'card-outline' },
+    { id: 'cash', label: 'Cash on Delivery', icon: 'cash-outline' }
+];
 
 export default function CheckoutScreen({ route, navigation }) {
-    const { total = 0, items = [] } = route.params || {};
-    const [paymentMethod, setPaymentMethod] = useState('card');
-    const [deliveryInfo, setDeliveryInfo] = useState({
-        fullName: '',
+    const { total, items } = route.params;
+    const [loading, setLoading] = useState(false);
+    const [userInfo, setUserInfo] = useState({
+        email: 'Youmou@gmail.com',
+        nom: '',
+        prenom: '',
         address: '',
-        city: '',
-        postalCode: ''
+        telephone: ''
     });
-    const [cardInfo, setCardInfo] = useState({
-        cardNumber: '',
-        expiry: '',
-        cvv: ''
-    });
+    const [selectedPayment, setSelectedPayment] = useState('cash');
 
+    // Load user info if available
     useEffect(() => {
-        checkAuthStatus();
+        loadUserInfo();
     }, []);
 
-    const checkAuthStatus = async () => {
+    const loadUserInfo = async () => {
         try {
-            const token = await AsyncStorage.getItem('ClientToken');
-            if (!token) {
-                navigation.replace('MainContainer', {
-                    screen: 'Login',
-                    params: { 
-                        returnTo: 'checkout',
-                        params: route.params
-                    }
+            const userData = await AsyncStorage.getItem('userData');
+            if (userData) {
+                const parsed = JSON.parse(userData);
+                setUserInfo({
+                    email: parsed.email || 'Youmou@gmail.com',
+                    nom: parsed.nom || '',
+                    prenom: parsed.prenom || '',
+                    address: parsed.adresse || '',
+                    telephone: parsed.contact || ''
                 });
             }
         } catch (error) {
-            console.error('Error checking auth status:', error);
-            navigation.goBack();
+            console.error('Error loading user info:', error);
         }
     };
 
-    const handlePlaceOrder = async () => {
-        // Validate all required fields
-        if (!validateForm()) {
-            alert('Please fill in all required information');
-            return;
-        }
-
+    const handleCheckout = async () => {
         try {
-            const orderDetails = {
-                deliveryInfo,
-                paymentMethod,
-                cardInfo: paymentMethod === 'card' ? cardInfo : null,
-                items,
-                total: total + 5,
-                status: 'pending',
-                date: new Date().toISOString()
-            };
-            
-            await AsyncStorage.removeItem(CART_STORAGE_KEY);
-            navigation.navigate('OrderConfirmation');
-        } catch (error) {
-            console.error('Error placing order:', error);
-            alert('Failed to place order. Please try again.');
-        }
-    };
+            setLoading(true);
 
-    const validateForm = () => {
-        if (!deliveryInfo.fullName || !deliveryInfo.address || 
-            !deliveryInfo.city || !deliveryInfo.postalCode) {
-            return false;
-        }
-        
-        if (paymentMethod === 'card') {
-            if (!cardInfo.cardNumber || !cardInfo.expiry || !cardInfo.cvv) {
-                return false;
+            // Validate required fields
+            if (!userInfo.email || !userInfo.nom || !userInfo.prenom || !userInfo.address || !userInfo.telephone) {
+                Alert.alert('Error', 'Please fill in all required fields');
+                return;
             }
-        }
-        
-        return true;
-    };
 
-    const renderPaymentSection = () => (
-        <Animated.View 
-            entering={FadeInDown.duration(400)}
-            style={styles.section}
-        >
-            <Text style={styles.sectionTitle}>Payment Method</Text>
-            <View style={styles.paymentOptions}>
-                {[
-                    { id: 'card', icon: 'card-outline', label: 'Credit Card' },
-                    { id: 'cash', icon: 'cash-outline', label: 'Cash on Delivery' }
-                ].map((method) => (
-                    <Pressable 
-                        key={method.id}
-                        style={[
-                            styles.paymentOption,
-                            paymentMethod === method.id && styles.paymentOptionActive
-                        ]}
-                        onPress={() => setPaymentMethod(method.id)}
-                    >
-                        <Ionicons 
-                            name={method.icon}
-                            size={24}
-                            color={paymentMethod === method.id ? '#FF385C' : '#666'}
-                        />
-                        <Text style={[
-                            styles.paymentText,
-                            paymentMethod === method.id && styles.paymentTextActive
-                        ]}>
-                            {method.label}
-                        </Text>
-                    </Pressable>
-                ))}
-            </View>
-            
-            {paymentMethod === 'card' && (
-                <View style={styles.cardInputs}>
-                    <TextInput 
-                        style={styles.input}
-                        placeholder="Card Number"
-                        value={cardInfo.cardNumber}
-                        onChangeText={(text) => setCardInfo({...cardInfo, cardNumber: text})}
-                        placeholderTextColor="#999"
-                        keyboardType="numeric"
-                        maxLength={16}
-                    />
-                    <View style={styles.row}>
-                        <TextInput 
-                            style={[styles.input, { flex: 1, marginRight: 8 }]}
-                            placeholder="MM/YY"
-                            value={cardInfo.expiry}
-                            onChangeText={(text) => setCardInfo({...cardInfo, expiry: text})}
-                            placeholderTextColor="#999"
-                            keyboardType="numeric"
-                            maxLength={5}
-                        />
-                        <TextInput 
-                            style={[styles.input, { flex: 1 }]}
-                            placeholder="CVV"
-                            value={cardInfo.cvv}
-                            onChangeText={(text) => setCardInfo({...cardInfo, cvv: text})}
-                            placeholderTextColor="#999"
-                            keyboardType="numeric"
-                            secureTextEntry
-                            maxLength={3}
-                        />
-                    </View>
-                </View>
-            )}
-        </Animated.View>
-    );
+            const orderData = {
+                userInfo,
+                basketItems: JSON.stringify(items),
+                totalPrice: total,
+                paymentMethod: selectedPayment
+            };
+
+            const response = await axios.post(
+                'http://10.0.2.2:3306/api/commande/InsertCommand',
+                orderData
+            );
+
+            if (response.data.success) {
+                // Clear cart
+                await AsyncStorage.setItem(CART_STORAGE_KEY, JSON.stringify([]));
+                Alert.alert(
+                    'Success',
+                    'Order placed successfully!',
+                    [
+                        {
+                            text: 'OK',
+                            onPress: () => navigation.navigate('Home')
+                        }
+                    ]
+                );
+            }
+        } catch (error) {
+            console.error('Checkout error:', error);
+            Alert.alert('Error', error.response?.data?.message || 'Failed to place order');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={styles.safeArea}>
+            <StatusBar backgroundColor="#FFFFFF" barStyle="dark-content" />
             <View style={styles.header}>
-                <Pressable onPress={() => navigation.goBack()} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color="#FFF" />
-                </Pressable>
+                <TouchableOpacity 
+                    style={styles.backButton}
+                    onPress={() => navigation.goBack()}
+                >
+                    <Ionicons name="arrow-back" size={24} color="#333" />
+                </TouchableOpacity>
                 <Text style={styles.headerTitle}>Checkout</Text>
-                <View style={{width: 40}} />
+                <View style={styles.placeholder} />
             </View>
 
-            <ScrollView style={styles.content}>
-                {/* Delivery Section */}
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Delivery Address</Text>
-                    <View style={styles.inputGroup}>
-                        <TextInput 
-                            style={styles.input}
-                            placeholder="Full Name"
-                            placeholderTextColor="#999"
-                            value={deliveryInfo.fullName}
-                            onChangeText={(text) => setDeliveryInfo({...deliveryInfo, fullName: text})}
-                        />
-                        <TextInput 
-                            style={styles.input}
-                            placeholder="Street Address"
-                            placeholderTextColor="#999"
-                            value={deliveryInfo.address}
-                            onChangeText={(text) => setDeliveryInfo({...deliveryInfo, address: text})}
-                        />
-                        <View style={styles.row}>
-                            <TextInput 
-                                style={[styles.input, { flex: 1, marginRight: 8 }]}
-                                placeholder="City"
-                                placeholderTextColor="#999"
-                                value={deliveryInfo.city}
-                                onChangeText={(text) => setDeliveryInfo({...deliveryInfo, city: text})}
-                            />
-                            <TextInput 
-                                style={[styles.input, { flex: 1 }]}
-                                placeholder="Postal Code"
-                                placeholderTextColor="#999"
-                                value={deliveryInfo.postalCode}
-                                onChangeText={(text) => setDeliveryInfo({...deliveryInfo, postalCode: text})}
-                            />
-                        </View>
+            <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+                <View style={styles.orderSummary}>
+                    <Text style={styles.sectionTitle}>Order Summary</Text>
+                    <View style={styles.summaryRow}>
+                        <Text style={styles.summaryLabel}>Items ({items.length})</Text>
+                        <Text style={styles.summaryValue}>{total.toFixed(2)} MAD</Text>
+                    </View>
+                    <View style={styles.summaryRow}>
+                        <Text style={styles.summaryLabel}>Delivery Fee</Text>
+                        <Text style={styles.summaryValue}>0.00 MAD</Text>
+                    </View>
+                    <View style={[styles.summaryRow, styles.totalRow]}>
+                        <Text style={styles.totalLabel}>Total</Text>
+                        <Text style={styles.totalAmount}>{total.toFixed(2)} MAD</Text>
                     </View>
                 </View>
 
-                {/* Payment Section */}
-                {renderPaymentSection()}
+                <View style={styles.form}>
+                    <Text style={styles.sectionTitle}>Delivery Information</Text>
+                    
+                    <View style={styles.inputGroup}>
+                        <View style={[styles.inputWrapper, styles.emailWrapper]}>
+                            <Ionicons name="mail-outline" size={20} color="#666" style={styles.inputIcon} />
+                            <Text style={styles.emailText}>{userInfo.email}</Text>
+                        </View>
+                    </View>
 
-                {/* Order Summary */}
-                <View style={styles.summarySection}>
-                    <Text style={styles.sectionTitle}>Order Summary</Text>
-                    {items.map((item, index) => (
-                        <View key={index} style={styles.itemRow}>
-                            <Text style={styles.itemName}>{item.name}</Text>
-                            <Text style={styles.itemQuantity}>×{item.quantity}</Text>
-                            <Text style={styles.itemPrice}>${item.price}</Text>
+                    <View style={styles.nameContainer}>
+                        <View style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}>
+                            <View style={styles.inputWrapper}>
+                                <Ionicons name="person-outline" size={20} color="#666" style={styles.inputIcon} />
+                                <TextInput
+                                    style={styles.input}
+                                    value={userInfo.prenom}
+                                    onChangeText={(text) => setUserInfo({...userInfo, prenom: text})}
+                                    placeholder="First Name"
+                                />
+                            </View>
                         </View>
-                    ))}
-                    <View style={styles.totalsContainer}>
-                        <View style={styles.totalRow}>
-                            <Text style={styles.totalLabel}>Subtotal</Text>
-                            <Text style={styles.totalValue}>${(total * 0.9).toFixed(2)}</Text>
+
+                        <View style={[styles.inputGroup, { flex: 1, marginLeft: 8 }]}>
+                            <View style={styles.inputWrapper}>
+                                <Ionicons name="person-outline" size={20} color="#666" style={styles.inputIcon} />
+                                <TextInput
+                                    style={styles.input}
+                                    value={userInfo.nom}
+                                    onChangeText={(text) => setUserInfo({...userInfo, nom: text})}
+                                    placeholder="Last Name"
+                                />
+                            </View>
                         </View>
-                        <View style={styles.totalRow}>
-                            <Text style={styles.totalLabel}>Delivery Fee</Text>
-                            <Text style={styles.totalValue}>$5.00</Text>
+                    </View>
+
+                    <View style={styles.inputGroup}>
+                        <View style={styles.inputWrapper}>
+                            <Ionicons name="call-outline" size={20} color="#666" style={styles.inputIcon} />
+                            <TextInput
+                                style={styles.input}
+                                value={userInfo.telephone}
+                                onChangeText={(text) => setUserInfo({...userInfo, telephone: text})}
+                                placeholder="Phone Number"
+                                keyboardType="phone-pad"
+                            />
                         </View>
-                        <View style={styles.totalRow}>
-                            <Text style={styles.totalLabel}>Tax (10%)</Text>
-                            <Text style={styles.totalValue}>${(total * 0.1).toFixed(2)}</Text>
+                    </View>
+
+                    <View style={styles.inputGroup}>
+                        <View style={styles.inputWrapper}>
+                            <Ionicons name="location-outline" size={20} color="#666" style={styles.inputIcon} />
+                            <TextInput
+                                style={[styles.input, styles.textArea]}
+                                value={userInfo.address}
+                                onChangeText={(text) => setUserInfo({...userInfo, address: text})}
+                                placeholder="Delivery Address"
+                                multiline
+                            />
                         </View>
-                        <View style={[styles.totalRow, styles.finalTotal]}>
-                            <Text style={styles.grandTotalLabel}>Total</Text>
-                            <Text style={styles.grandTotalValue}>${(total + 5).toFixed(2)}</Text>
-                        </View>
+                    </View>
+
+                    <Text style={styles.sectionTitle}>Payment Method</Text>
+                    <View style={styles.paymentMethods}>
+                        {PAYMENT_METHODS.map((method) => (
+                            <Pressable
+                                key={method.id}
+                                style={[
+                                    styles.paymentOption,
+                                    selectedPayment === method.id && styles.selectedPayment
+                                ]}
+                                onPress={() => setSelectedPayment(method.id)}
+                            >
+                                <Ionicons 
+                                    name={method.icon} 
+                                    size={24} 
+                                    color={selectedPayment === method.id ? '#fff' : '#666'} 
+                                />
+                                <Text style={[
+                                    styles.paymentText,
+                                    selectedPayment === method.id && styles.selectedPaymentText
+                                ]}>
+                                    {method.label}
+                                </Text>
+                            </Pressable>
+                        ))}
                     </View>
                 </View>
             </ScrollView>
 
             <View style={styles.footer}>
-                <Pressable 
-                    style={styles.placeOrderButton}
-                    onPress={handlePlaceOrder}
+                <TouchableOpacity 
+                    style={[styles.checkoutButton, loading && styles.disabledButton]}
+                    onPress={handleCheckout}
+                    disabled={loading}
                 >
-                    <Text style={styles.placeOrderText}>Place Order</Text>
-                    <Ionicons name="checkmark-circle" size={20} color="#FFF" />
-                </Pressable>
+                    {loading ? (
+                        <ActivityIndicator color="#fff" />
+                    ) : (
+                        <>
+                            <Text style={styles.checkoutButtonText}>Place Order</Text>
+                            <Ionicons name="arrow-forward" size={20} color="#fff" />
+                        </>
+                    )}
+                </TouchableOpacity>
             </View>
         </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
+    safeArea: {
         flex: 1,
-        backgroundColor: '#FFFFFF',
+        backgroundColor: '#fff',
+        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: 16,
-        backgroundColor: '#FF385C',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#f0f0f0',
     },
     headerTitle: {
-        fontSize: 18,
-        fontFamily: 'Poppins-SemiBold',
-        color: '#FFF',
+        fontSize: 20,
+        fontWeight: '600',
+        color: '#333',
     },
     backButton: {
         padding: 8,
-        borderRadius: 20,
-        backgroundColor: 'rgba(255, 255, 255, 0.2)',
     },
-    steps: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        padding: 20,
-        backgroundColor: '#FFF',
-        elevation: 2,
+    placeholder: {
+        width: 40,
     },
-    stepContainer: {
-        alignItems: 'center',
-    },
-    stepCircle: {
-        width: 30,
-        height: 30,
-        borderRadius: 15,
-        backgroundColor: '#f0f0f0',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 8,
-    },
-    stepCircleActive: {
-        backgroundColor: '#FF385C',
-    },
-    stepNumber: {
-        color: '#666',
-        fontSize: 14,
-        fontFamily: 'Poppins-Medium',
-    },
-    stepNumberActive: {
-        color: '#FFF',
-    },
-    stepLabel: {
-        color: '#666',
-        fontSize: 12,
-        fontFamily: 'Poppins-Regular',
-    },
-    content: {
+    container: {
         flex: 1,
-        padding: 16,
+        backgroundColor: '#fff',
     },
-    section: {
-        marginBottom: 24,
+    orderSummary: {
+        margin: 16,
+        padding: 16,
+        backgroundColor: '#f8f8f8',
+        borderRadius: 12,
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
     },
     sectionTitle: {
         fontSize: 18,
-        fontFamily: 'Poppins-SemiBold',
-        color: '#333',
+        fontWeight: '600',
         marginBottom: 16,
-    },
-    input: {
-        backgroundColor: '#f8f8f8',
-        borderRadius: 12,
-        padding: 12,
-        marginBottom: 12,
-        fontSize: 16,
-        fontFamily: 'Poppins-Regular',
-        marginTop:10
-    },
-    row: {
-        flexDirection: 'row',
-    },
-    paymentOptions: {
-        flexDirection: 'column',
-        gap: 12,
-    },
-    paymentOption: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 16,
-        borderRadius: 12,
-        backgroundColor: '#f8f8f8',
-        borderWidth: 1,
-        borderColor: '#f0f0f0',
-    },
-    paymentOptionActive: {
-        backgroundColor: '#FFF0F3',
-        borderWidth: 1,
-        borderColor: '#FF385C',
-    },
-    paymentText: {
-        marginLeft: 12,
-        fontSize: 16,
-        fontFamily: 'Poppins-Medium',
         color: '#333',
-    },
-    paymentTextActive: {
-        color: '#FF385C',
     },
     summaryRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         marginBottom: 8,
     },
+    summaryLabel: {
+        color: '#666',
+        fontSize: 15,
+    },
+    summaryValue: {
+        color: '#333',
+        fontSize: 15,
+        fontWeight: '500',
+    },
     totalRow: {
-        borderTopWidth: 1,
-        borderTopColor: '#f0f0f0',
-        paddingTop: 16,
         marginTop: 8,
+        paddingTop: 8,
+        borderTopWidth: 1,
+        borderTopColor: '#eee',
+    },
+    totalLabel: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#333',
+    },
+    totalAmount: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#FF385C',
+    },
+    form: {
+        padding: 16,
+    },
+    nameContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
+    inputGroup: {
+        marginBottom: 16,
+    },
+    inputWrapper: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#f8f8f8',
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        borderWidth: 1,
+        borderColor: '#eee',
+    },
+    inputIcon: {
+        marginRight: 8,
+    },
+    input: {
+        flex: 1,
+        paddingVertical: 12,
+        fontSize: 16,
+        color: '#333',
+    },
+    disabledInput: {
+        color: '#666',
+        backgroundColor: '#f0f0f0',
+    },
+    textArea: {
+        height: 80,
+        textAlignVertical: 'top',
     },
     footer: {
         padding: 16,
         borderTopWidth: 1,
         borderTopColor: '#f0f0f0',
+        backgroundColor: '#fff',
     },
-    confirmButton: {
+    checkoutButton: {
         backgroundColor: '#FF385C',
-        borderRadius: 12,
         padding: 16,
+        borderRadius: 12,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
         gap: 8,
     },
-    confirmButtonText: {
-        color: '#FFF',
-        fontSize: 16,
-        fontFamily: 'Poppins-SemiBold',
+    checkoutButtonText: {
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: '600',
     },
-    itemRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingVertical: 8,
-        borderBottomWidth: 1,
-        borderBottomColor: '#f0f0f0',
+    disabledButton: {
+        opacity: 0.7,
     },
-    itemName: {
+    emailWrapper: {
+        backgroundColor: '#fff',
+        borderColor: '#eee',
+    },
+    emailText: {
         flex: 1,
-        fontSize: 14,
-        fontFamily: 'Poppins-Medium',
+        paddingVertical: 12,
+        fontSize: 16,
         color: '#333',
+        opacity: 1,
     },
-    itemQuantity: {
-        fontSize: 14,
-        fontFamily: 'Poppins-Regular',
-        color: '#666',
-        marginHorizontal: 12,
-    },
-    itemPrice: {
-        fontSize: 14,
-        fontFamily: 'Poppins-SemiBold',
-        color: '#FF385C',
-    },
-    buttonContainer: {
-        flexDirection: 'row',
+    paymentMethods: {
+        marginTop: 12,
         gap: 12,
     },
-    nextButton: {
-        backgroundColor: '#FF385C',
-        borderRadius: 12,
-        padding: 16,
+    paymentOption: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'center',
-        gap: 8,
-        flex: 2,
-    },
-    nextButtonText: {
-        color: '#FFF',
-        fontSize: 16,
-        fontFamily: 'Poppins-SemiBold',
-    },
-    totalsContainer: {
+        padding: 16,
         backgroundColor: '#f8f8f8',
-        padding: 16,
         borderRadius: 12,
-        marginTop: 16,
+        borderWidth: 1,
+        borderColor: '#eee',
+        gap: 12,
     },
-    finalTotal: {
-        borderTopWidth: 1,
-        borderTopColor: '#e0e0e0',
-        marginTop: 12,
-        paddingTop: 12,
-    },
-    grandTotalLabel: {
-        fontSize: 18,
-        fontFamily: 'Poppins-Bold',
-        color: '#333',
-    },
-    grandTotalValue: {
-        fontSize: 24,
-        fontFamily: 'Poppins-Bold',
-        color: '#FF385C',
-    },
-    placeOrderButton: {
+    selectedPayment: {
         backgroundColor: '#FF385C',
-        borderRadius: 12,
-        padding: 16,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 8,
+        borderColor: '#FF385C',
     },
-    placeOrderText: {
-        color: '#FFF',
-        fontSize: 18,
-        fontFamily: 'Poppins-SemiBold',
+    paymentText: {
+        fontSize: 16,
+        color: '#333',
+        fontWeight: '500',
+    },
+    selectedPaymentText: {
+        color: '#fff',
     },
 });

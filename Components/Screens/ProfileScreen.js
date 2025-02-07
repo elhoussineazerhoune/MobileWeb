@@ -66,7 +66,12 @@ export default function ProfileScreen({ navigation, route }) {
     const [isConnected, setIsConnected] = useState(false);
     const [image, setimage] = useState();
     const [Posts, setPosts] = useState();
-    const [orders, setOrders] = useState(mockOrders);
+    const [orders, setOrders] = useState([]);
+    const [orderStats, setOrderStats] = useState({
+        total: 0,
+        pending: 0,
+        completed: 0
+    });
 
     const [isAdmin, SetisAdmin] = useState(true);
 
@@ -101,9 +106,36 @@ export default function ProfileScreen({ navigation, route }) {
             }).catch((e) => console.warn(e));
     }
 
+    const fetchUserOrders = async (userId) => {
+        try {
+            const response = await axios.get(`http://10.0.2.2:3306/api/commande/orders/${userId}`);
+            if (response.data.success) {
+                setOrders(response.data.data);
+                console.log(response.data.data);
+                
+
+                
+                // Calculate order statistics
+                const stats = response.data.data.reduce((acc, order) => {
+                    acc.total++;
+                    if (order.status === 'En attente') acc.pending++;
+                    if (order.status === 'terminé') acc.completed++;
+                    return acc;
+                }, { total: 0, pending: 0, completed: 0 });
+                
+                setOrderStats(stats);
+            }
+        } catch (error) {
+            console.error('Error fetching orders:', error);
+        }
+    };
+
     useEffect(() => {
         handleProfile();
-    }, []);
+        if (user?.id) {
+            fetchUserOrders(user.id);
+        }
+    }, [user?.id]);
 
     function handleSignOut() {
         AsyncStorage.removeItem("ClientToken")
@@ -167,6 +199,69 @@ export default function ProfileScreen({ navigation, route }) {
     //         })
     // }
 
+    const getStatusStyle = (status) => {
+        switch(status) {
+            case 'validé':
+                return 'Completed';
+            case 'terminé':
+                return 'Completed';
+            case 'En attente':
+                return 'Pending';
+            case 'en cours':
+                return 'Processing';
+            case 'annulé':
+                return 'Cancelled';
+            default:
+                return 'Pending';
+        }
+    };
+
+    const getStatusText = (status) => {
+        const statusMap = {
+            'En attente': 'Pending',
+            'validé': 'Validated',
+            'annulé': 'Cancelled',
+            'en cours': 'Processing',
+            'terminé': 'Completed'
+        };
+        return statusMap[status] || status;
+    };
+
+    const renderOrders = () => (
+        <View style={styles.ordersContainer}>
+            <Text style={styles.sectionTitle}>Recent Orders</Text>
+            {orders.slice(0, 5).map((order) => (
+                <TouchableOpacity
+                    key={order.id}
+                    style={styles.orderCard}
+                    onPress={() => navigation.navigate('OrderDetails', { 
+                        orderId: order.id,
+                        userId: user.id 
+                    })}
+                >
+                    <View style={styles.orderHeader}>
+                        <View>
+                            <Text style={styles.orderNumber}>Order #{order.id}</Text>
+                            <Text style={styles.orderDate}>
+                                {new Date(order.createdAt).toLocaleDateString()}
+                            </Text>
+                        </View>
+                        <Text style={[
+                            styles.orderStatus,
+                            styles[`status${getStatusStyle(order.status)}`]
+                        ]}>
+                            {getStatusText(order.status)}
+                        </Text>
+                    </View>
+                    <View style={styles.orderFooter}>
+                        <Text style={styles.orderTotal}>{order.prixTotal.toFixed(2)} MAD</Text>
+                        <Ionicons name="chevron-forward" size={20} color="#666" />
+                    </View>
+                </TouchableOpacity>
+            ))}
+        </View>
+    );
+
     if (!user) {
         <ActivityIndicator size="large" color="#0000ff" />
     } else {
@@ -195,17 +290,17 @@ export default function ProfileScreen({ navigation, route }) {
                     {/* Stats Section */}
                     <View style={styles.statsContainer}>
                         <View style={styles.statItem}>
-                            <Text style={styles.statNumber}>12</Text>
+                            <Text style={styles.statNumber}>{orderStats.total}</Text>
                             <Text style={styles.statLabel}>Orders</Text>
                         </View>
                         <View style={styles.statDivider} />
                         <View style={styles.statItem}>
-                            <Text style={styles.statNumber}>4</Text>
+                            <Text style={styles.statNumber}>{orderStats.pending}</Text>
                             <Text style={styles.statLabel}>Pending</Text>
                         </View>
                         <View style={styles.statDivider} />
                         <View style={styles.statItem}>
-                            <Text style={styles.statNumber}>8</Text>
+                            <Text style={styles.statNumber}>{orderStats.completed}</Text>
                             <Text style={styles.statLabel}>Completed</Text>
                         </View>
                     </View>
@@ -220,40 +315,10 @@ export default function ProfileScreen({ navigation, route }) {
                             <Ionicons name="settings-outline" size={20} color="#FF385C" />
                             <Text style={styles.actionText}>Settings</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.actionButton} onPress={() => navigation.navigate('CreateArticle')}>
-                            <Ionicons name="pencil-outline" size={20} color="#FF385C" />
-                            <Text style={styles.actionText}>Créer Article</Text>
-                        </TouchableOpacity>
                     </View>
 
                     {/* Recent Orders */}
-                    <View style={styles.ordersContainer}>
-                        <Text style={styles.sectionTitle}>Recent Orders</Text>
-                        {orders.map((order) => (
-                            <TouchableOpacity
-                                key={order.id}
-                                style={styles.orderCard}
-                                onPress={() => navigation.navigate('OrderDetails', { orderId: order.id })}
-                            >
-                                <View style={styles.orderHeader}>
-                                    <View>
-                                        <Text style={styles.orderNumber}>Order #{order.id}</Text>
-                                        <Text style={styles.orderDate}>{new Date(order.date).toLocaleDateString()}</Text>
-                                    </View>
-                                    <Text style={[
-                                        styles.orderStatus,
-                                        styles[`status${order.status.charAt(0).toUpperCase() + order.status.slice(1)}`]
-                                    ]}>
-                                        {order.status}
-                                    </Text>
-                                </View>
-                                <View style={styles.orderFooter}>
-                                    <Text style={styles.orderTotal}>${order.total.toFixed(2)}</Text>
-                                    <Ionicons name="chevron-forward" size={20} color="#666" />
-                                </View>
-                            </TouchableOpacity>
-                        ))}
-                    </View>
+                    {renderOrders()}
 
                     {/* Logout Button */}
                     <TouchableOpacity style={styles.logoutButton} onPress={handleSignOut}>
@@ -266,6 +331,36 @@ export default function ProfileScreen({ navigation, route }) {
     }
 
 }
+
+const additionalStyles = StyleSheet.create({
+    statusPending: {
+        backgroundColor: '#FFF3E0',
+        color: '#EF6C00',
+    },
+    statusProcessing: {
+        backgroundColor: '#E3F2FD',
+        color: '#1976D2',
+    },
+    statusCompleted: {
+        backgroundColor: '#E8F5E9',
+        color: '#2E7D32',
+    },
+    statusCancelled: {
+        backgroundColor: '#FFEBEE',
+        color: '#C62828',
+    },
+    ordersContainer: {
+        marginTop: 24,
+    },
+    orderStatus: {
+        paddingHorizontal: 12,
+        paddingVertical: 4,
+        borderRadius: 12,
+        fontSize: 12,
+        fontWeight: '600',
+        textTransform: 'capitalize',
+    },
+});
 
 const styles = StyleSheet.create({
     containerInfos: {
@@ -581,4 +676,5 @@ const styles = StyleSheet.create({
         flexGrow: 1,
         paddingBottom: 90, // Increased padding to account for navbar
     },
+    ...additionalStyles
 });

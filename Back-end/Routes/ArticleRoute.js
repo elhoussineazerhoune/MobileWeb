@@ -8,7 +8,9 @@ const {
   fetchByCategorie,
   fetchPopularProducts,
   findLastProducts,
-  fetchPartByPart
+  fetchPartByPart,
+  findRandomProducts,
+  findByCategory
 } = require("../Controllers/ArticleController.js");
 const multer = require("multer");
 const { checkRoles } = require("../Middlewares/Middlewares.js");
@@ -32,5 +34,8 @@ ArticleRouter.post("/update", upload.single("image"), updatearticle);
 ArticleRouter.post("/delete", deleteArticle);
 ArticleRouter.post("/paginated", fetchPartByPart);
 ArticleRouter.get("/:id", fetchByCategorie);
+ArticleRouter.get("/category/:categoryId", findByCategory);
+ArticleRouter.get("/random", findRandomProducts);
+// ArticleRouter.get("/category/:categoryId", findByCategory);
 
 module.exports = { ArticleRouter };

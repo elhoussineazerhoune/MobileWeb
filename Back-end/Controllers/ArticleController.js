@@ -347,6 +347,81 @@ const findOneArticle = async (req, res) => {
   }
 };
 
+const fetchByCategory = async (req, res) => {
+  const { categoryId } = req.params;
+  try {
+    const products = await Article.findAll({
+      where: { categorie_id: categoryId },
+      limit: 10,
+      order: [['updatedAt', 'DESC']]
+    });
+
+    res.status(200).json({
+      success: true,
+      filteredProducts: products
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error fetching products by category",
+      error: error.message
+    });
+  }
+};
+
+const findRandomProducts = async (req, res) => {
+  try {
+    const products = await Article.findAll();
+    
+    // Shuffle array using Fisher-Yates algorithm
+    for (let i = products.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [products[i], products[j]] = [products[j], products[i]];
+    }
+
+    // Take first 8 items after shuffling
+    const randomProducts = products.slice(0, 8);
+
+    res.status(200).json({
+      success: true,
+      data: randomProducts
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error fetching random products",
+      error: error.message
+    });
+  }
+};
+
+const findByCategory = async (req, res) => {
+  const { categoryId } = req.params;
+  try {
+    const products = await Article.findAll({
+      where: { categorie_id: categoryId },
+      include: [{
+        model: Categorie,
+        as: 'categorie',
+        attributes: ['nom_categorie']
+      }],
+      limit: 10,
+      order: [['updatedAt', 'DESC']]
+    });
+
+    res.status(200).json({
+      success: true,
+      data: products
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error fetching products by category",
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   createArticle,
   updatearticle,
@@ -358,4 +433,7 @@ module.exports = {
   fetchByCategorie,
   fetchPopularProducts,
   fetchPartByPart,
+  fetchByCategory,
+  findRandomProducts,
+  findByCategory,
 };

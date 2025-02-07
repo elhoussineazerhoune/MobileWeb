@@ -64,10 +64,10 @@ export default function HomeScreen({ navigation }) {
                     <CategoriesSection />
                     <ProductsSection type={"Suggestions"} />
 
-                    {/* <Posts /> */}
-
-                    <ProductsSection type={"Snickers"} />
-                    <ProductsSection type={"MenWears"} />
+                    {/* Category-based product sections */}
+                    <ProductsSection type={"Men"} categoryId={1} />
+                    <ProductsSection type={"Women"} categoryId={2} />
+                    {/* <ProductsSection type={""} categoryId={3} /> */}
 
                 </ScrollView>
             </SafeAreaView>

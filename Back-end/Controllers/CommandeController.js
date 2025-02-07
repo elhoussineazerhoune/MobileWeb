@@ -256,16 +256,18 @@ const InsertCommand = async (req, res) => {
       prixTotal: totalPrice,
       paymentMethod: paymentMethod,
     });
+    console.log(basketItems);
+    
 
     const commandId = insertedCommand.id;
 
     // Insert each basket item into CommandeDetail
-    for (const item of basketItems) {
+    for (const item of JSON.parse(basketItems)) {
       await CommandeDetail.create({
         commandeId: commandId,
         articleId: item.id,
         quantite: item.quantity,
-        totalLigne: item.totalPrice,
+        totalLigne: item.puv*item.quantity,
       });
     }
 
@@ -296,7 +298,7 @@ const getClientOrders = async (req, res) => {
             {
               model: Article,
               as: "article", // Inclure les informations sur l'article
-              attributes: ["id", "nom", "puv", "description"], // Sélectionner les colonnes pertinentes
+              attributes: ["id", "nom", "puv", "description","image"], // Sélectionner les colonnes pertinentes
             },
           ],
         },
@@ -326,6 +328,53 @@ const getClientOrders = async (req, res) => {
   }
 };
 
+const getCommandeById = async (req, res) => {
+  const { id } = req.params;
+  console.log("id",id);
+  
+  try {
+    const commande = await Commande.findOne({
+      where: { id },
+      include: [
+        {
+          model: CommandeDetail,
+          as: "details",
+          include: [
+            {
+              model: Article,
+              as: "article",
+              attributes: ["id", "nom", "puv", "description"],
+            },
+          ],
+        },
+        {
+          model: Client,
+          as: "client",
+          attributes: ["id", "nom", "prenom", "email", "contact", "adresse"],
+        },
+      ],
+    });
+
+    if (!commande) {
+      return res.status(404).json({
+        success: false,
+        message: "Commande non trouvée"
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: commande
+    });
+  } catch (error) {
+    console.error("Erreur lors de la récupération de la commande:", error);
+    res.status(500).json({
+      success: false,
+      message: "Erreur lors de la récupération de la commande",
+      error: error.message
+    });
+  }
+};
 
 module.exports = {
   updateCommande,
@@ -335,5 +384,6 @@ module.exports = {
   getAllCommandesWithDetails,
   findOneCommande,
   InsertCommand,
-  getClientOrders
+  getClientOrders,
+  getCommandeById
 };
