@@ -11,25 +11,43 @@ import SettingsScreen from "../Screens/SettingsScreen";
 import SearchScreen from "../Screens/SearchScreen";
 import LoginScreen from "../Screens/LoginScreen";
 import ProfileScreen from "../Screens/ProfileScreen";
+import AdminDashboard from "../Screens/AdminDashboard";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const homename = "Home";
 const SettingsName = "Settings";
-const DetailsName = "Details";
 const searchName = "Search";
 const LoginName = "Login";
 
 const { width } = Dimensions.get('window');
 
 const Tab = createBottomTabNavigator();
-export default function MainContainer() {
-    const [token, setToken] = useState();
+export default function MainContainer({ navigation }) {
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-    async function handleToken() {
-        const token = await AsyncStorage.getItem("ClientToken");
-        setToken(token);
-    }
-    handleToken();
+    useEffect(() => {
+        checkAuthStatus();
+    }, []);
+
+    const checkAuthStatus = async () => {
+        try {
+            const adminToken = await AsyncStorage.getItem("AdminToken");
+            if (adminToken) {
+                navigation.reset({
+                    index: 0,
+                    routes: [{ name: 'AdminDashboard' }]
+                });
+                return;
+            }
+            
+            const clientToken = await AsyncStorage.getItem("ClientToken");
+            setIsAuthenticated(!!clientToken);
+        } catch (error) {
+            console.error('Error checking authentication status:', error);
+            setIsAuthenticated(false);
+        }
+    };
+
     return (
         <Tab.Navigator
             initialRouteName={homename}
@@ -39,24 +57,20 @@ export default function MainContainer() {
                     let rn = route.name;
 
                     if (rn === homename) {
-                        iconName = focused ? "home" : "home-outline";
-                    } else if (rn === DetailsName) {
-                        return <MaterialCommunityIcons name="nfc-variant" size={30} color={color} />;
-                    } else if (rn === SettingsName) {
-                        iconName = focused ? "settings" : "settings-outline";
+                        iconName = focused ? "home-sharp" : "home-outline";
                     } else if (rn === searchName) {
-                        iconName = focused ? "search" : "search-outline";
+                        iconName = focused ? "compass" : "compass-outline";
+                    } else if (rn === SettingsName) {
+                        iconName = focused ? "settings" : "settings-outline";  // Changed from grid to apps
                     } else if (rn === LoginName) {
-                        if (focused) {
-                            iconName = token ? "person" : "log-in";
-                        } else {
-                            iconName = token ? "person-outline" : "log-in-outline";
-                        }
+                        iconName = focused 
+                            ? (isAuthenticated ? "person-circle" : "log-in")
+                            : (isAuthenticated ? "person-circle-outline" : "log-in-outline");
                     }
                     return (
                         <Ionicons 
                             name={iconName} 
-                            size={24} 
+                            size={rn === LoginName ? 28 : 24} 
                             color={color}
                             style={{
                                 transform: [{ scale: focused ? 1.2 : 1 }],
@@ -122,7 +136,13 @@ export default function MainContainer() {
             />
             <Tab.Screen
                 name={LoginName}
-                component={token ? ProfileScreen : LoginScreen}
+                component={isAuthenticated ? ProfileScreen : LoginScreen}
+                listeners={{
+                    tabPress: () => {
+                        // Force a re-check of auth status when tab is pressed
+                        checkAuthStatus();
+                    },
+                }}
                 options={{ tabBarShowLabel: false }}
             />
             <Tab.Screen

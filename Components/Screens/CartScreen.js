@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Image, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Image, Pressable, Alert } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -35,6 +35,20 @@ const CartItem = ({ item, onUpdateQuantity }) => (
 export default function CartScreen({ navigation }) {
     const [cartItems, setCartItems] = useState([]);
     const { updateCartCount } = useCart();
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+    useEffect(() => {
+        checkAuthStatus();
+    }, []);
+
+    const checkAuthStatus = async () => {
+        try {
+            const token = await AsyncStorage.getItem('ClientToken');
+            setIsAuthenticated(!!token);
+        } catch (error) {
+            console.error('Error checking auth status:', error);
+        }
+    };
 
     const loadCartItems = async () => {
         try {
@@ -96,6 +110,54 @@ export default function CartScreen({ navigation }) {
         return sum + (price * item.quantity);
     }, 0);
 
+    const handleCheckout = async () => {
+        if (!cartItems.length) return;
+
+        if (!isAuthenticated) {
+            Alert.alert(
+                "Login Required",
+                "Please login or create an account to checkout",
+                [
+                    {
+                        text: "Cancel",
+                        style: "cancel"
+                    },
+                    {
+                        text: "Login",
+                        onPress: () => navigation.navigate('MainContainer', {
+                            screen: 'Login',
+                            params: {
+                                showLogin: true,
+                                returnTo: 'checkout',
+                                params: {
+                                    total: total,
+                                    items: cartItems.map(item => ({
+                                        ...item,
+                                        price: parseFloat(item.price.replace('$', ''))
+                                    }))
+                                }
+                            }
+                        })
+                    },
+                    {
+                        text: "Sign Up",
+                        onPress: () => navigation.navigate("Sign Up")
+                    }
+                ]
+            );
+            return;
+        }
+
+        // Proceed to checkout if authenticated
+        navigation.navigate('checkout', {
+            total: total,
+            items: cartItems.map(item => ({
+                ...item,
+                price: parseFloat(item.price.replace('$', ''))
+            }))
+        });
+    };
+
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
@@ -130,8 +192,12 @@ export default function CartScreen({ navigation }) {
                         <Text style={styles.totalLabel}>Total:</Text>
                         <Text style={styles.totalAmount}>${total.toFixed(2)}</Text>
                     </View>
-                    <Pressable style={styles.checkoutButton}>
-                        <Text style={styles.checkoutButtonText}>Checkout</Text>
+                    <Pressable 
+                        style={styles.checkoutButton}
+                        onPress={handleCheckout}
+                    >
+                        <Text style={styles.checkoutButtonText}>Proceed to Checkout</Text>
+                        <Ionicons name="arrow-forward" size={20} color="#FFF" />
                     </Pressable>
                 </View>
             )}
@@ -217,6 +283,12 @@ const styles = StyleSheet.create({
         padding: 16,
         borderTopWidth: 1,
         borderTopColor: '#f0f0f0',
+        backgroundColor: '#FFF',
+        elevation: 4,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
     },
     totalSection: {
         flexDirection: 'row',
@@ -225,23 +297,27 @@ const styles = StyleSheet.create({
     },
     totalLabel: {
         fontSize: 18,
-        fontWeight: '600',
+        fontFamily: 'Poppins-Medium',
+        color: '#333',
     },
     totalAmount: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#FF4C4C',
+        fontSize: 24,
+        fontFamily: 'Poppins-Bold',
+        color: '#FF385C',
     },
     checkoutButton: {
-        backgroundColor: '#333',
+        backgroundColor: '#FF385C',
         padding: 16,
-        borderRadius: 10,
+        borderRadius: 12,
+        flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
     },
     checkoutButtonText: {
-        color: 'white',
+        color: '#FFF',
         fontSize: 16,
-        fontWeight: 'bold',
+        fontFamily: 'Poppins-SemiBold',
     },
     emptyCart: {
         textAlign: 'center',

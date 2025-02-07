@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, SafeAreaView, Image } from 'react-native';
-import { Card, Icon } from 'react-native-elements';
-import { Ionicons } from "@expo/vector-icons";
+import { View, Text, StyleSheet, ScrollView, SafeAreaView, Image, StatusBar } from 'react-native';
+import Ionicons from "react-native-vector-icons/Ionicons";
+import Animated, { FadeInDown } from 'react-native-reanimated';
 
 // Update mockup data with more details
 const mockOrderDetails = {
@@ -84,46 +84,59 @@ function OrderDetails({ route, navigation }) {
 
     return (
         <SafeAreaView style={styles.safeArea}>
+            <StatusBar backgroundColor="#FF385C" barStyle="light-content" />
+            
+            {/* Header */}
             <View style={styles.header}>
-                <Icon 
+                <Ionicons 
                     name="arrow-back"
-                    type="material"
-                    size={28}
+                    size={24}
+                    color="#FFF"
                     onPress={() => navigation.goBack()}
                 />
-                <Text style={styles.headerTitle}>Détails Commande</Text>
-                <View style={{width: 28}} />
+                <Text style={styles.headerTitle}>Order Details</Text>
+                <View style={{width: 24}} />
             </View>
 
             <ScrollView style={styles.container}>
-                <Card containerStyle={styles.card}>
-                    <View style={styles.orderHeader}>
-                        <View>
-                            <Text style={styles.orderNumber}>Commande #{orderId}</Text>
-                            <Text style={styles.date}>
-                                <Ionicons name="calendar-outline" size={14} />
-                                {' '}{new Date(orderDetails.date).toLocaleDateString()}
-                            </Text>
+                <Animated.View 
+                    entering={FadeInDown.duration(400)}
+                    style={styles.mainCard}
+                >
+                    {/* Order Status Banner */}
+                    <View style={[
+                        styles.statusBanner,
+                        { backgroundColor: getStatusColor(orderDetails.status).bg }
+                    ]}>
+                        <Ionicons 
+                            name={orderDetails.status === 'completed' ? 'checkmark-circle' : 
+                                  orderDetails.status === 'pending' ? 'time' : 'close-circle'}
+                            size={24}
+                            color={getStatusColor(orderDetails.status).text}
+                        />
+                        <Text style={[styles.statusText, { color: getStatusColor(orderDetails.status).text }]}>
+                            {orderDetails.status.toUpperCase()}
+                        </Text>
+                    </View>
+
+                    {/* Order Info */}
+                    <View style={styles.orderInfo}>
+                        <View style={styles.orderRow}>
+                            <Text style={styles.orderLabel}>Order ID</Text>
+                            <Text style={styles.orderValue}>#{orderDetails.id}</Text>
                         </View>
-                        <View style={[
-                            styles.statusBadge,
-                            { backgroundColor: getStatusColor(orderDetails.status).bg }
-                        ]}>
-                            <Text style={[
-                                styles.statusText,
-                                { color: getStatusColor(orderDetails.status).text }
-                            ]}>
-                                {orderDetails.status.toUpperCase()}
+                        <View style={styles.orderRow}>
+                            <Text style={styles.orderLabel}>Date</Text>
+                            <Text style={styles.orderValue}>
+                                {new Date(orderDetails.date).toLocaleDateString()}
                             </Text>
                         </View>
                     </View>
 
-                    {/* Customer Information Section */}
+                    {/* Customer Section */}
                     <View style={styles.section}>
-                        <Text style={styles.subtitle}>
-                            <Ionicons name="person-outline" size={18} /> Information Client
-                        </Text>
-                        <View style={styles.customerInfo}>
+                        <Text style={styles.sectionTitle}>Customer Information</Text>
+                        <View style={styles.customerCard}>
                             <Text style={styles.infoRow}>
                                 <Ionicons name="person" size={14} /> {orderDetails.customer.name}
                             </Text>
@@ -139,55 +152,50 @@ function OrderDetails({ route, navigation }) {
                         </View>
                     </View>
 
-                    {/* Products Section with Enhanced Details */}
+                    {/* Products Section */}
                     <View style={styles.section}>
-                        <Text style={styles.subtitle}>
-                            <Ionicons name="cart-outline" size={18} /> Produits
-                        </Text>
+                        <Text style={styles.sectionTitle}>Products</Text>
                         {orderDetails.products.map(product => (
-                            <View key={product.id} style={styles.productCard}>
-                                <Image 
-                                    source={product.image} 
-                                    style={styles.productImage}
-                                />
-                                <View style={styles.productDetails}>
+                            <Animated.View 
+                                key={product.id}
+                                entering={FadeInDown.duration(400)}
+                                style={styles.productCard}
+                            >
+                                <Image source={product.image} style={styles.productImage} />
+                                <View style={styles.productInfo}>
                                     <Text style={styles.productName}>{product.name}</Text>
-                                    <Text style={styles.productType}>Type: {product.type}</Text>
-                                    <Text style={styles.productDescription}>{product.description}</Text>
-                                    <View style={styles.productMetrics}>
-                                        <View style={styles.metric}>
-                                            <Text style={styles.metricLabel}>Quantité</Text>
-                                            <Text style={styles.metricValue}>{product.quantity}</Text>
-                                        </View>
-                                        <View style={styles.metric}>
-                                            <Text style={styles.metricLabel}>En Stock</Text>
-                                            <Text style={styles.metricValue}>{product.inStock}</Text>
-                                        </View>
-                                        <View style={styles.metric}>
-                                            <Text style={styles.metricLabel}>Prix Unit.</Text>
-                                            <Text style={styles.metricValue}>{product.price}€</Text>
-                                        </View>
+                                    <Text style={styles.productType}>{product.type}</Text>
+                                    <View style={styles.productMeta}>
+                                        <Text style={styles.productPrice}>${product.price}</Text>
+                                        <Text style={styles.productQuantity}>×{product.quantity}</Text>
                                     </View>
                                 </View>
-                            </View>
+                            </Animated.View>
                         ))}
                     </View>
 
-                    <View style={styles.totalSection}>
-                        <View style={styles.totalRow}>
-                            <Text style={styles.totalLabel}>Sous-total</Text>
-                            <Text style={styles.totalValue}>{(orderDetails.total * 0.8).toFixed(2)}€</Text>
+                    {/* Price Summary */}
+                    <View style={styles.priceSummary}>
+                        <View style={styles.priceRow}>
+                            <Text style={styles.priceLabel}>Subtotal</Text>
+                            <Text style={styles.priceValue}>
+                                ${(orderDetails.total * 0.8).toFixed(2)}
+                            </Text>
+                        </View>
+                        <View style={styles.priceRow}>
+                            <Text style={styles.priceLabel}>Tax (20%)</Text>
+                            <Text style={styles.priceValue}>
+                                ${(orderDetails.total * 0.2).toFixed(2)}
+                            </Text>
                         </View>
                         <View style={styles.totalRow}>
-                            <Text style={styles.totalLabel}>TVA (20%)</Text>
-                            <Text style={styles.totalValue}>{(orderDetails.total * 0.2).toFixed(2)}€</Text>
-                        </View>
-                        <View style={[styles.totalRow, styles.finalTotal]}>
-                            <Text style={styles.totalAmount}>Total</Text>
-                            <Text style={styles.totalAmount}>{orderDetails.total}€</Text>
+                            <Text style={styles.totalLabel}>Total</Text>
+                            <Text style={styles.totalValue}>
+                                ${orderDetails.total.toFixed(2)}
+                            </Text>
                         </View>
                     </View>
-                </Card>
+                </Animated.View>
             </ScrollView>
         </SafeAreaView>
     );
@@ -196,190 +204,122 @@ function OrderDetails({ route, navigation }) {
 const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
-        backgroundColor: '#f5f5f5',
+        backgroundColor: '#FF385C',
     },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: 16,
-        backgroundColor: 'white',
-        elevation: 2,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3,
+        backgroundColor: '#FF385C',
     },
     headerTitle: {
         fontSize: 18,
-        fontWeight: 'bold',
+        fontFamily: 'Poppins-SemiBold',
+        color: '#FFF',
     },
     container: {
         flex: 1,
+        backgroundColor: '#f8f9fa',
     },
-    card: {
-        borderRadius: 15,
-        margin: 16,
+    mainCard: {
+        backgroundColor: '#FFF',
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
         padding: 20,
-        elevation: 4,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
+        marginTop: 8,
     },
-    orderHeader: {
+    statusBanner: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        marginBottom: 24,
-    },
-    orderNumber: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        marginBottom: 4,
-    },
-    date: {
-        color: '#666',
-        fontSize: 14,
-    },
-    statusBadge: {
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 12,
+        borderRadius: 12,
+        marginBottom: 20,
+        gap: 8,
     },
     statusText: {
-        fontSize: 12,
-        fontWeight: '600',
+        fontSize: 14,
+        fontFamily: 'Poppins-SemiBold',
     },
-    subtitle: {
-        fontSize: 18,
-        fontWeight: '600',
-        marginBottom: 16,
-        color: '#374151',
-    },
-    productsList: {
+    orderInfo: {
+        backgroundColor: '#f8f9fa',
+        borderRadius: 12,
+        padding: 16,
         marginBottom: 24,
     },
-    productItem: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingVertical: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: '#f0f0f0',
-    },
-    productInfo: {
-        flex: 1,
-    },
-    productName: {
-        fontSize: 16,
-        fontWeight: '500',
-        marginBottom: 4,
-    },
-    productQuantity: {
-        color: '#666',
-        fontSize: 14,
-    },
-    productPrice: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#374151',
-    },
-    totalSection: {
-        marginTop: 16,
-        paddingTop: 16,
-        borderTopWidth: 1,
-        borderTopColor: '#f0f0f0',
-    },
-    totalRow: {
+    orderRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         marginBottom: 8,
-    },
-    totalLabel: {
-        color: '#666',
-        fontSize: 14,
-    },
-    totalValue: {
-        fontSize: 14,
-        color: '#374151',
-    },
-    finalTotal: {
-        marginTop: 12,
-        paddingTop: 12,
-        borderTopWidth: 1,
-        borderTopColor: '#f0f0f0',
-    },
-    totalAmount: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#374151',
     },
     section: {
         marginBottom: 24,
-        borderBottomWidth: 1,
-        borderBottomColor: '#f0f0f0',
-        paddingBottom: 16,
     },
-    customerInfo: {
-        backgroundColor: '#f8f9fa',
-        padding: 16,
-        borderRadius: 8,
-        marginTop: 8,
-    },
-    infoRow: {
-        marginBottom: 8,
-        fontSize: 14,
-        color: '#4a5568',
+    sectionTitle: {
+        fontSize: 18,
+        fontFamily: 'Poppins-SemiBold',
+        color: '#333',
+        marginBottom: 16,
     },
     productCard: {
         flexDirection: 'row',
         backgroundColor: '#fff',
         borderRadius: 12,
-        marginBottom: 16,
         padding: 12,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
-        elevation: 2,
+        marginBottom: 12,
+        borderWidth: 1,
+        borderColor: '#f0f0f0',
     },
     productImage: {
         width: 80,
         height: 80,
         borderRadius: 8,
-        marginRight: 12,
     },
-    productDetails: {
+    productInfo: {
         flex: 1,
+        marginLeft: 12,
+        justifyContent: 'space-between',
+    },
+    productName: {
+        fontSize: 16,
+        fontFamily: 'Poppins-Medium',
+        color: '#333',
     },
     productType: {
         fontSize: 14,
+        fontFamily: 'Poppins-Regular',
         color: '#666',
-        marginBottom: 4,
     },
-    productDescription: {
-        fontSize: 12,
-        color: '#666',
-        marginBottom: 8,
-    },
-    productMetrics: {
+    productMeta: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-    },
-    metric: {
         alignItems: 'center',
     },
-    metricLabel: {
-        fontSize: 12,
-        color: '#666',
-        marginBottom: 2,
+    productPrice: {
+        fontSize: 16,
+        fontFamily: 'Poppins-SemiBold',
+        color: '#FF385C',
     },
-    metricValue: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#374151',
+    priceSummary: {
+        backgroundColor: '#f8f9fa',
+        borderRadius: 12,
+        padding: 16,
+        marginTop: 16,
     },
+    totalRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingTop: 12,
+        marginTop: 12,
+        borderTopWidth: 1,
+        borderTopColor: '#e0e0e0',
+    },
+    totalValue: {
+        fontSize: 20,
+        fontFamily: 'Poppins-Bold',
+        color: '#FF385C',
+    }
 });
 
 export default OrderDetails;

@@ -61,7 +61,7 @@ const mockOrders = [
     }
 ];
 
-export default function ProfileScreen({ navigation }) {
+export default function ProfileScreen({ navigation, route }) {
     const [user, setUser] = useState({});
     const [isConnected, setIsConnected] = useState(false);
     const [image, setimage] = useState();
@@ -69,6 +69,22 @@ export default function ProfileScreen({ navigation }) {
     const [orders, setOrders] = useState(mockOrders);
 
     const [isAdmin, SetisAdmin] = useState(true);
+
+    useEffect(() => {
+        const showLogin = route.params?.showLogin;
+        const showSignUp = route.params?.showSignUp;
+        const returnTo = route.params?.returnTo;
+        const returnParams = route.params?.params;
+
+        if (showLogin) {
+            navigation.navigate('Login', {
+                returnTo: returnTo,
+                params: returnParams
+            });
+        } else if (showSignUp) {
+            navigation.navigate('Sign Up');
+        }
+    }, [route.params]);
 
     async function handleProfile() {
         const id = await AsyncStorage.getItem("ClientToken");

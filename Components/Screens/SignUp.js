@@ -72,14 +72,18 @@ export default function SignUp({ navigation }) {
 
                 <Text style={styles.label}>Contact</Text>
                 <TextInput
-                    placeholder="Enter your contact number"
+                    placeholder="Enter your phone number"
                     style={styles.TextInput}
                     keyboardType="numeric"
                     onChangeText={(text) => {
                         text.length <= 8 ? setInvalidContact(true) : setInvalidContact(false);
                         setContactInput(text)
                     }} />
-                {invalidContact && <Text style={styles.errorText}>(min 10 characters)</Text>}
+                {invalidContact && (
+                    <Text style={styles.errorText}>
+                        (min 10 characters)
+                    </Text>
+                )}
 
                 <Text style={styles.label}>Email</Text>
                 <TextInput
@@ -130,18 +134,7 @@ export default function SignUp({ navigation }) {
 
                 <Pressable
                     style={styles.Pressable}
-                    onPress={() => {
-                        if (
-                            adresse.length >= 10 &&
-                            contact.length >= 10 &&
-                            password.length >= 10 &&
-                            newpassword === password &&
-                            name &&
-                            lastname
-                        ) {
-                            handleSignUp();
-                        }
-                    }}
+                    onPress={handleSignUp}
                 >
                     <Text style={styles.Text_pressable}>Create Account</Text>
                 </Pressable>

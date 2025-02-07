@@ -11,34 +11,64 @@ export default function LoginScreen({ navigation }) {
 
     // Function to handle login request
     function handleLogin() {
+        console.log('Attempting login with:', { email, password });
+        setError('');
+        setMessage('');
+        
         axios
             .post("http://10.0.2.2:3306/api/client/login", { email, password })
-            .then((res) => {
-                console.log("===" + JSON.stringify(res.data));
-                if (!res.data.success) {
-                    // email or password incorrect
-                    setError(res.data.message);
-                    setMessage(res.data.message);
-                } else {
-                    if (res.data.admin) {
-                        AsyncStorage.setItem("AdminToken", res.data.token);
-                    } else {
-                        AsyncStorage.setItem("ClientToken", res.data.token);
+            .then(async (res) => {
+                console.log("Login response:", res.data);
+                
+                if (res.data.token) {
+                    try {
+                        if (res.data.admin) {
+                            await AsyncStorage.setItem("AdminToken", res.data.token);
+                            navigation.reset({
+                                index: 0,
+                                routes: [{ name: 'AdminDashboard' }]
+                            });
+                        } else {
+                            await AsyncStorage.setItem("ClientToken", res.data.token);
+                            
+                            // Only save user data if it exists
+                            if (res.data.user) {
+                                await AsyncStorage.setItem("UserData", JSON.stringify(res.data.user));
+                            } else {
+                                console.warn('No user data received from server');
+                            }
+                            
+                            // Force MainContainer to update
+                            navigation.reset({
+                                index: 0,
+                                routes: [{ name: 'MainContainer' }]
+                            });
+                        }
+                    } catch (error) {
+                        console.error('Error saving auth data:', error);
+                        setError('Failed to save authentication data');
+                        setMessage('Please try logging in again');
                     }
-                    navigation.navigate("Home");
+                } else {
+                    setError('Invalid login response - no token received');
+                    setMessage('Login failed - please try again');
                 }
             })
-            .catch((err) => console.warn(err));
+            .catch((err) => {
+                console.error('Login error:', err);
+                setError(err.response?.data?.message || 'Network error occurred');
+                setMessage('Login failed - please check your credentials');
+            });
     }
     return (
         <View style={styles.container}>
             <View style={styles.formContainer}>
-                <Text style={styles.title}>S'inscrire</Text>
+                <Text style={styles.title}>Sign In</Text>
 
                 <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Nom d'utilisateur</Text>
+                    <Text style={styles.label}>Username</Text>
                     <TextInput
-                        placeholder="Entrez votre nom d'utilisateur"
+                        placeholder="Enter your username"
                         style={styles.TextInput}
                         onChangeText={(username) => setEmail(username)}
                         placeholderTextColor="#9FA5C0"
@@ -46,9 +76,9 @@ export default function LoginScreen({ navigation }) {
                 </View>
 
                 <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Mot de passe</Text>
+                    <Text style={styles.label}>Password</Text>
                     <TextInput
-                        placeholder="Entrez votre mot de passe"
+                        placeholder="Enter your password"
                         secureTextEntry={true}
                         style={styles.TextInput}
                         onChangeText={(password) => setPassword(password)}
@@ -59,18 +89,18 @@ export default function LoginScreen({ navigation }) {
                 {message && <Text style={styles.errorMessage}>{message}</Text>}
 
                 <Pressable style={styles.loginButton} onPress={handleLogin}>
-                    <Text style={styles.loginButtonText}>Se connecter</Text>
+                    <Text style={styles.loginButtonText}>Sign In</Text>
                 </Pressable>
 
                 <Pressable onPress={() => { }}>
-                    <Text style={styles.forgotPassword}>Mot de passe oublié ?</Text>
+                    <Text style={styles.forgotPassword}>Forgot Password?</Text>
                 </Pressable>
 
                 <Pressable
                     style={styles.createAccountButton}
                     onPress={() => navigation.navigate("Sign Up")}
                 >
-                    <Text style={styles.createAccountText}>Créer un compte</Text>
+                    <Text style={styles.createAccountText}>Create Account</Text>
                 </Pressable>
             </View>
         </View>

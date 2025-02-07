@@ -59,7 +59,7 @@ const data = [
     },
 
 ]
-export default function SearchScreen() {
+export default function SearchScreen({ navigation }) { // Add navigation prop
     const [Data, setData] = useState(data);
     const [isConnected, setIsConnected] = useState(false);
     const [input, setInput] = useState("");
@@ -96,14 +96,19 @@ export default function SearchScreen() {
                     entering={FadeInDown.duration(400)}
                     style={styles.searchHeader}
                 >
-                    <View style={styles.searchBox}>
-                        <Ionicons name='search' size={22} color="#FF385C" />
-                        <TextInput 
-                            placeholder='What are you looking for?' 
-                            style={styles.searchInput} 
-                            onChangeText={setInput}
-                            placeholderTextColor="#999"
-                        />
+                    <View style={styles.headerContainer}>
+                        <Pressable onPress={() => navigation.goBack()} style={styles.backButton}>
+                            <Ionicons name="arrow-back" size={24} color="#333" />
+                        </Pressable>
+                        <View style={styles.searchBox}>
+                            <Ionicons name='search' size={22} color="#FF385C" />
+                            <TextInput 
+                                placeholder='What are you looking for?' 
+                                style={styles.searchInput} 
+                                onChangeText={setInput}
+                                placeholderTextColor="#999"
+                            />
+                        </View>
                     </View>
                 </Animated.View>
 
@@ -174,7 +179,16 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: '#f0f0f0',
     },
+    headerContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+    },
+    backButton: {
+        padding: 8,
+    },
     searchBox: {
+        flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: '#f8f8f8',
